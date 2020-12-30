@@ -2,6 +2,9 @@
 
 ### v1.0 -> v1.0.1 (12/30/2020)
 
+#### Addresses Issues:
+  * #1
+
 #### Command Changes
 
 ##### Subcommands Added:
