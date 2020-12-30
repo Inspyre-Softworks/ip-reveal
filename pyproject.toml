@@ -1,19 +1,18 @@
 [tool.poetry]
 name = "ip-reveal"
-version = "1.0"
+version = "1.0.1"
 description = "A GUI-based widget that checks your IP address periodically, sending notifications if it changes."
 authors = ["Taylor B. <tayjaybabee@gmail.com>"]
 license = "WTFPL"
 
 [tool.poetry.dependencies]
 humanize = "^3.1.0"
-inspy_logger = "2.0.0a6"
-inspyred_print = "^1.0"
 PySimpleGUI = "^4.30.0"
 PySimpleGUIQt = "^0.35.0"
 python = "^3.7"
 requests = "^2.25.0"
 simpleaudio = "^1.0.4"
+inspy-logger = "2.0.1b1"
 
 [tool.poetry.dev-dependencies]
 Sphinx = "^3.4.1"

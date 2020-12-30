@@ -8,7 +8,6 @@ from urllib.error import URLError
 import PySimpleGUIQt as Qt
 from inspy_logger import LEVELS as LOG_LEVELS, getLogger
 from inspy_logger import InspyLogger
-from inspyred_print import Color, Format
 from requests import get
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import MaxRetryError
@@ -26,19 +25,47 @@ from ip_reveal.tools import commify
 quit_icon = app_quit_50x50_fp
 refresh_icon = app_refresh_50x50_fp
 
-end = Format().end_mod
-color = Color()
-red = color.red
-
 update_window_timer = None
 
 timer = timer
 timer.start()
 
-cached_ext_ip = None
 ip_hist = []
 
 inet_down = False
+
+# Set up a name for our logging device
+log_name = "IPReveal"
+
+GH_URL = "https://github.com/Inspyre-Softworks/ip-reveal"
+"""
+The URL to the Github repo page
+"""
+
+# Declare a variable named 'acc' for our accumulator and set it at int(0)
+acc = 0
+
+# For statistics tracking; declare a variable called 'refresh_num' and start it at 0
+refresh_num = 0
+
+# ...and one that will hold our total cycle count
+total_acc = 0
+
+# Set up a placeholder variable for our window object
+window = None
+
+# Set up two variables that will act as caches for the external and internal IPs
+cached_ext_ip = None
+cached_int_ip = None
+
+t_text = None
+refreshing = None
+
+# Set up a global variable to keep track of mute status
+mute = None
+
+# Set up a global variable to keep track of if offline or not
+offline = None
 
 
 def get_hostname():
@@ -72,7 +99,7 @@ def get_external():
     Returns:
         str: The system's apparent external IP-Address in the form of a string.
     """
-    global cached_ext_ip, inet_down, ip_hist
+    global cached_ext_ip, inet_down, ip_hist, mute
 
     # Prepare the logger
     _log = getLogger(log_name + '.get_external')
@@ -102,8 +129,10 @@ def get_external():
         if not cached_ext_ip:
             cached_ext_ip = external
             if not cached_ext_ip == external:
-                ip_change_notify(cached_ext_ip, external)
+                ip_change_notify(cached_ext_ip, external, mute)
                 cached_ext_ip = external
+                ip_hist.append(ip)
+
 
     else:
         return False
@@ -178,7 +207,7 @@ def update_window(values=None):
         None
 
     """
-    global acc, refresh_num, timer, cached_ext_ip, ip_hist
+    global acc, refresh_num, timer, cached_ext_ip, ip_hist, mute, refreshing
 
     # Start the logger for this operation
     _log = getLogger(log_name + '.update_window')
@@ -203,6 +232,7 @@ def update_window(values=None):
 
     if not ip:
         ip = "Offline"
+        offline = True
 
     local_ip = get_internal()
     hostname = get_hostname()
@@ -226,10 +256,10 @@ def update_window(values=None):
     u_debug(f'Updated window with new values: {values}')
     u_debug(f'This was refresh number {refresh_num}')
 
-    if not ip == cached_ext_ip:
-        ip_change_notify(cached_ext_ip, ip)
-        cached_ext_ip = ip
-        ip_hist.append(ip)
+    # if not ip == cached_ext_ip:
+    #     ip_change_notify(cached_ext_ip, ip, mute)
+    #     cached_ext_ip = ip
+    #     ip_hist.append(ip)
 
 
 def safe_exit(win, exit_reason):
@@ -249,28 +279,8 @@ def safe_exit(win, exit_reason):
     sys.exit()
 
 
-# Set up a name for our logging device
-log_name = "IPReveal"
-
-# Declare a variable named 'acc' for our accumulator and set it at int(0)
-acc = 0
-
-# For statistics tracking; declare a variable called 'refresh_num' and start it at 0
-refresh_num = 0
-
-# ...and one that will hold our total cycle count
-total_acc = 0
-
-# Set up a placeholder variable for our window object
-window = None
-
-# Set up two variables that will act as caches for the external and internal IPs
-cached_ext_ip = None
-cached_int_ip = None
-
-
 def main():
-    global total_acc, acc, refresh_num, window
+    global total_acc, acc, refresh_num, window, mute, t_text, refreshing
 
     # Timer text
     t_text = "Just now..."
@@ -299,19 +309,28 @@ def main():
 
     ext_ip_parse = sub_parsers.add_parser('get-external',
                                           help='Return the external IP to the command-line and nothing else.')
+
     host_parse = sub_parsers.add_parser(
         'get-host', help='Return the hostname to the command-line and nothing else.')
+
     local_parse = sub_parsers.add_parser('get-local',
                                          help='Return the local IP-Address to the command-line and nothing '
                                               'else.')
 
+    network_parse = sub_parsers.add_parser('get-network-info', help='Return all three: hostname, local ip, and '
+                                                                    'external ip to the commandline')
+
+    doc_parse_gh = sub_parsers.add_parser('get-github',
+                                          help="Return the link to IP Reveal's Github repo")
+
     args = parser.parse_args()
+    mute = args.mute_all
 
     # Set up the logging device
-    log_device = InspyLogger(log_name, args.log_level)
+    log_device = InspyLogger().LogDevice(log_name, args.log_level)
 
     # Start the logging device
-    log = log_device.start(mute=args.subcommands)
+    log = log_device.start()
     debug = log.debug
 
     # Announce that we did that
@@ -319,6 +338,7 @@ def main():
     log = getLogger(log_name + '.Main')
     # Alias the log.debug signature for ease-of-use
     debug = log.debug
+    debug(f"Program muted: {mute}")
 
     # See if we got one of the subcommands assigned.
     if args.subcommands == 'get-external':
@@ -330,10 +350,22 @@ def main():
     elif args.subcommands == 'get-local':
         print(get_internal())
         exit()
+    elif args.subcommands == 'get-github':
+        print(GH_URL)
+        exit()
+    elif args.subcommands == 'get-network-info':
+        ext = get_external()
+        local = get_internal()
+        hostname = get_hostname()
+        print(f"\nHostname:    {hostname}\n"
+              f"External IP: {ext}\n"
+              f"Local IP:    {local}\n")
+        exit()
 
     status_bar_layout = [
 
     ]
+
 
     bg_color = "340245"
     size = (220, 50)
@@ -342,6 +374,7 @@ def main():
         text_background_color = "pink"
     else:
         text_background_color = "white"
+
 
     layout = [
         [
@@ -370,6 +403,12 @@ def main():
                     text_color="black", size_px=size, auto_size_text=True, justification='center')
         ],
         [
+            Qt.Text(f"Status", background_color=text_background_color, text_color="black",
+                    relief=Qt.RELIEF_GROOVE, size_px=size, auto_size_text=True, justification='center'),
+            Qt.Text(t_text, key="STATUS_OUT", relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
+                    text_color="black", size_px=size, auto_size_text=True, justification='center')
+        ],
+        [
             Qt.Button('', key='MAIN_CLOSE_BUTTON',
                       image_filename=app_quit_50x50_fp,
                       image_size=(50, 50),
@@ -393,6 +432,9 @@ def main():
                        background_color="white"
                        )
 
+    mute = args.mute_all
+    debug(f"Muted: {mute}")
+
     # Start our main GUI loop.
     while True:
         event, values = window.read(timeout=100)
@@ -407,17 +449,35 @@ def main():
 
         t_text = timer.get_elapsed()
 
-        window['TIME_SINCE_Q_OUT'].update(f"{t_text} ago...")
+        window['TIME_SINCE_Q_OUT'].update(timer.get_elapsed())
 
-        # If the accumulator is at 325 counts, alert the user, update the window, and reset the accumulator
+        ref_acc = 0
+
+        if refreshing:
+            ref_acc += 1
+            if ref_acc >= 4:
+                ref_acc = 0
+
+            dots = '.' * ref_acc
+
+            window['STATUS_OUT'].update(f"Refreshing{dots}", text_color='yellow')
+        else:
+            if not offline:
+                window['STATUS_OUT'].update("Online", text_color="green")
+            else:
+                window['STATUS_OUT'].update("Offline", text_color="red")
+
+        # If the accumulator is at 325 counts, alert the user, version the window, and reset the accumulator
         if acc == 325:
-            w_debug('Calling function to update the window...')
+            w_debug('Calling function to version the window...')
+            refreshing = True
 
             window['TIME_SINCE_Q_OUT'].update('Refreshing...')
             update_win = Thread(target=update_window)
 
             update_win.start()
             w_debug('Updated window!')
+            refreshing = False
 
         # If the 'Close' button is pressed: we exit.
         if event is None or event == 'MAIN_CLOSE_BUTTON':

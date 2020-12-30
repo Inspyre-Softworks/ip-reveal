@@ -6,15 +6,18 @@ from threading import Thread
 GUI = Gui
 
 bell = Alerts()
+mute = None
 
 
 def notify(msg, duration=7000, alpha=.8, location=(750, 450), icon=icons_alert_shield):
-    bell.play()
+    if not mute:
+        bell.play()
+
     GUI.popup_notify(msg, display_duration_in_ms=duration, alpha=alpha,
                      location=location, icon=icon)
 
 
-def ip_change_notify(old, new):
+def ip_change_notify(old, new, muted):
     """
 
     Play and alert sound and produce a notification in the center of the screen alerting the user that their external IP
@@ -30,6 +33,10 @@ def ip_change_notify(old, new):
         None
 
     """
+    global mute
+
+    mute = muted
+
     message = f'Your external IP address has changed from {old} to {new}'
     notif = Thread(target=notify, args=(message,))
     notif.start()
