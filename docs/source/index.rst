@@ -13,6 +13,8 @@ Welcome to IP Reveal's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   includeme
+
 
 
 Indices and tables
