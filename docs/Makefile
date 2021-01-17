@@ -6,7 +6,9 @@
 SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = source
-BUILDDIR      = build
+BUILDDIR      = ../../ip-reveal-docs
+PDFBUILDDIR   = /tmp
+PDF           = ../manual.pdf
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -14,9 +16,17 @@ help:
 
 .PHONY: help Makefile
 
-github:
-	@make html
-	@cp -a build/html/. ./docs
+#github:
+#	@make html
+#	@cp -a build/html/. ./docs
+
+latexpdf:
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(PDFBUILDDIR)/latex
+	@echo "Running latex files through PDFlatex..."
+	make -C $(PDFBUILDDIR)/latex all-pdf
+	cp $(PDFBUILDDIR)/latex/*.pdf $(PDF)
+	@echo "PDFlatex finished; see $(PDF)"
+
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
