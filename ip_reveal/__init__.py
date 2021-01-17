@@ -1,25 +1,27 @@
 import socket
 import sys
-from argparse import ArgumentParser
+
 from platform import node
 from socket import gaierror
 from urllib.error import URLError
 
 import PySimpleGUIQt as Qt
-from inspy_logger import LEVELS as LOG_LEVELS, getLogger
-from inspy_logger import InspyLogger
+from inspy_logger import getLogger, InspyLogger
 from requests import get
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import MaxRetryError
 from threading import Thread
 
 from ip_reveal.assets.ui_elements.backgrounds import NEON_DARK_FP
-from ip_reveal.assets.ui_elements.icons import app_main_24x24
-from ip_reveal.assets.ui_elements.icons import app_quit_50x50_fp
-from ip_reveal.assets.ui_elements.icons import app_refresh_50x50_fp
+
+from ip_reveal.assets.ui_elements.icons import app_main_24x24, \
+                                               app_quit_50x50_fp, \
+                                               app_refresh_50x50_fp
+
+from ip_reveal.tools.arguments import Reader
 
 import ip_reveal.timers as timer
-from ip_reveal.popups import ip_change_notify
+from ip_reveal.popups import ip_change_notify, net_info as net_info_popup, proj_info as proj_info_popup
 from ip_reveal.tools import commify
 
 quit_icon = app_quit_50x50_fp
@@ -66,7 +68,6 @@ mute = None
 
 # Set up a global variable to keep track of if offline or not
 offline = None
-
 
 def get_hostname():
     """
@@ -131,7 +132,7 @@ def get_external():
             if not cached_ext_ip == external:
                 ip_change_notify(cached_ext_ip, external, mute)
                 cached_ext_ip = external
-                ip_hist.append(ip)
+                ip_hist.append(external)
 
 
     else:
@@ -287,43 +288,9 @@ def main():
 
     # Qt.theme('DarkBlue3')
 
-    parser = ArgumentParser(
-        'ip-reveal', description='A program that will show you your external IP address.')
+    parser = Reader()
 
-    parser.add_argument('-l', '--log-level',
-                        nargs='?',
-                        choices=LOG_LEVELS,
-                        default='info'
-                        )
-
-    # Argument to mute sounds
-    parser.add_argument('-m', '--mute-all',
-                        action='store_true',
-                        required=False,
-                        help="Starts the program with all program audio muted.",
-                        default=False
-                        )
-
-    sub_parsers = parser.add_subparsers(
-        dest='subcommands', help='The sub-commands for IP Reveal')
-
-    ext_ip_parse = sub_parsers.add_parser('get-external',
-                                          help='Return the external IP to the command-line and nothing else.')
-
-    host_parse = sub_parsers.add_parser(
-        'get-host', help='Return the hostname to the command-line and nothing else.')
-
-    local_parse = sub_parsers.add_parser('get-local',
-                                         help='Return the local IP-Address to the command-line and nothing '
-                                              'else.')
-
-    network_parse = sub_parsers.add_parser('get-network-info', help='Return all three: hostname, local ip, and '
-                                                                    'external ip to the commandline')
-
-    doc_parse_gh = sub_parsers.add_parser('get-github',
-                                          help="Return the link to IP Reveal's Github repo")
-
-    args = parser.parse_args()
+    args = parser.parsed
     mute = args.mute_all
 
     # Set up the logging device
@@ -352,20 +319,25 @@ def main():
         exit()
     elif args.subcommands == 'get-github':
         print(GH_URL)
+        if args.popup:
+            proj_info_popup('github')
+            exit()
+
         exit()
+
     elif args.subcommands == 'get-network-info':
         ext = get_external()
         local = get_internal()
         hostname = get_hostname()
-        print(f"\nHostname:    {hostname}\n"
-              f"External IP: {ext}\n"
-              f"Local IP:    {local}\n")
+        statement = str(f"\nHostname:    {hostname}\n"
+                        f"External IP: {ext}\n"
+                        f"Local IP:    {local}\n"
+                        )
+        if args.popup:
+            net_info_popup(statement)
+        else:
+            print(statement)
         exit()
-
-    status_bar_layout = [
-
-    ]
-
 
     bg_color = "340245"
     size = (220, 50)
@@ -375,8 +347,12 @@ def main():
     else:
         text_background_color = "white"
 
+    main_menu = [
+        ["Application", ["About", "Preferences"]]
+    ]
 
     layout = [
+        [Qt.Menu(main_menu, background_color="#D3D1D3")],
         [
             Qt.Text('External IP:', background_color=text_background_color, text_color="black", relief=Qt.RELIEF_GROOVE,
                     size_px=size, auto_size_text=True, justification='center'),
@@ -420,6 +396,7 @@ def main():
                       button_color=(None, "#ff0000"),
                       tooltip="Refresh")
         ],
+
     ]
 
     # Assemble the above widget into a window.
@@ -427,10 +404,16 @@ def main():
                        background_image=NEON_DARK_FP,
                        icon=app_main_24x24,
                        size=(300, 400),
-                       alpha_channel=alpha,
+                       alpha_channel=.95,
                        grab_anywhere=True,
-                       background_color="white"
-                       )
+                       background_color="white",
+                       no_titlebar=True,
+                       return_keyboard_events=True,
+                       keep_on_top=True)
+
+    # ToDO:
+    #     * Add a config window and associated config file.
+    #         * Include in config window the ability to make the window "Always on top"
 
     mute = args.mute_all
     debug(f"Muted: {mute}")

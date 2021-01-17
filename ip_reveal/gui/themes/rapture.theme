@@ -1,0 +1,7 @@
+[COLORS]
+menu_background: periwinkle
+button_background: pink
+
+[ICONS]
+quit: icon_file
+refresh: icon_file

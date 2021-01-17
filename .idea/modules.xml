@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/ip-reveal.iml" filepath="$PROJECT_DIR$/.idea/ip-reveal.iml" />
+      <module fileurl="file://$USER_HOME$/PycharmProjects/ip_reveal_installer/.idea/ip_reveal_installer.iml" filepath="$USER_HOME$/PycharmProjects/ip_reveal_installer/.idea/ip_reveal_installer.iml" />
     </modules>
   </component>
 </project>

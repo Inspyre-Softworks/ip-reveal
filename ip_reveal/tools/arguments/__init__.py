@@ -1,7 +1,8 @@
 from argparse import ArgumentParser
+from inspy_logger import LEVELS as LOG_LEVELS
 
 
-class ArgParser(ArgumentParser):
+class Reader(object):
 
     def __init__(self):
         """
@@ -9,36 +10,78 @@ class ArgParser(ArgumentParser):
         Instantiate an argument parser.
 
         """
-        super().__init__()
 
-        self.add_argument("-v", "--verbose", required=False, action="store_true", default=False,
-                          help="Use this option if you'd like the most output from the program into the console you "
-                               "can get")
+        self.parser = ArgumentParser("ip-reveal",
+                                     description="Monitors your external IP address.",
+                                     allow_abbrev=True,
+                                     add_help=True)
 
-        self.add_argument("--no-alerts", required=False, action='store_true', default=False,
-                          help="If you use this flag it will set")
+        self.parser.add_argument('-l', '--log-level',
+                                 nargs='?',
+                                 choices=LOG_LEVELS,
+                                 default='info'
+                                 )
 
-        self.add_argument('--mode', required=False, help='Not used')
+        # Argument to mute sounds
+        self.parser.add_argument('-m', '--mute-all',
+                                 action='store_true',
+                                 required=False,
+                                 help="Starts the program with all program audio muted.",
+                                 default=False
+                                 )
 
-        self.add_argument('--port', required=False, action='store', default=None, help='Not used')
+        self.sub_parsers = self.parser.add_subparsers(
+            dest='subcommands', help='The sub-commands for IP Reveal')
 
+        ext_ip_parse = self.sub_parsers.add_parser('get-external',
+                                                   help='Return the external IP to the command-line and nothing else.')
 
-def run():
-    """
+        ext_ip_parse.add_argument('-p', '--popup',
+                                  help='Return information in a GUI popup window.',
+                                  action='store_true',
+                                  required=False,
+                                  default=False
+                                  )
 
-    The main driver for the arguments package, this will call on the ArgParser class and parse our arguments for us
+        host_parse = self.sub_parsers.add_parser(
+            'get-host', help='Return the hostname to the command-line and nothing else.')
 
-    Returns:
-        ArgsParser (object): A parsed ArgParser object which will have the namespace for the program's options.
+        host_parse.add_argument('-p', '--popup',
+                                help='Return information in a GUI popup window.',
+                                action='store_true',
+                                required=False,
+                                default=False
+                                )
 
-    """
+        local_parse = self.sub_parsers.add_parser('get-local',
+                                                  help='Return the local IP-Address to the command-line and nothing '
+                                                       'else.')
 
-    # Instantiate our argument parser
-    parser = ArgParser()
+        local_parse.add_argument('-p', '--popup',
+                                 help='Return information in a GUI popup window.',
+                                 action='store_true',
+                                 required=False,
+                                 default=False
+                                 )
 
-    # Parse the arguments that were received on session start
-    args = parser.parse_args()
+        network_parse = self.sub_parsers.add_parser('get-network-info',
+                                                    help='Return all three: hostname, local ip, and '
+                                                         'external ip to the commandline')
+        network_parse.add_argument('-p', '--popup',
+                                   help='Return information in a GUI popup window.',
+                                   action='store_true',
+                                   required=False,
+                                   default=False
+                                   )
 
-    return args
+        doc_parse_gh = self.sub_parsers.add_parser('get-github',
+                                                   help="Return the link to IP Reveal's Github repo")
 
-run()
+        doc_parse_gh.add_argument('-p', '--popup',
+                                  help='Return information in a GUI popup window.',
+                                  action='store_true',
+                                  required=False,
+                                  default=False
+                                  )
+
+        self.parsed = self.parser.parse_args()

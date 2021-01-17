@@ -4,6 +4,7 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="jdk" jdkName="Python 3.7 (ip-reveal-euf6yIbL-py3.7)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="ip_reveal_installer" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="format" value="GOOGLE" />

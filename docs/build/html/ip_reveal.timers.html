@@ -1,0 +1,258 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  
+  <title>ip_reveal.timers package &mdash; IP Reveal 1.0.1 documentation</title>
+  
+
+  
+  <link href="_static/css/theme.css" rel="stylesheet" type="text/css" />
+  <link href="_static/pygments.css" rel="stylesheet" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js" type="text/javascript"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script src="_static/js/theme.js" type="text/javascript"></script>
+
+    
+    <link href="genindex.html" rel="index" title="Index" />
+    <link href="search.html" rel="search" title="Search" />
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav class="wy-nav-side" data-toggle="wy-nav-shift">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a class="icon icon-home" href="index.html"> IP Reveal
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form action="search.html" class="wy-form" id="rtd-search-form" method="get">
+    <input name="q" placeholder="Search docs" type="text" />
+    <input name="check_keywords" type="hidden" value="yes" />
+    <input name="area" type="hidden" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div aria-label="main navigation" class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">ip_reveal.timers package</a><ul>
+<li><a class="reference internal" href="#module-ip_reveal.timers">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section class="wy-nav-content-wrap" data-toggle="wy-nav-shift">
+
+      
+      <nav aria-label="top navigation" class="wy-nav-top">
+        
+          <i class="fa fa-bars" data-toggle="wy-nav-top"></i>
+          <a href="index.html">IP Reveal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div aria-label="breadcrumbs navigation" role="navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a class="icon icon-home" href="index.html"></a> &raquo;</li>
+        
+      <li>ip_reveal.timers package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/ip_reveal.timers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div class="document" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="ip-reveal-timers-package">
+<h1>ip_reveal.timers package<a class="headerlink" href="#ip-reveal-timers-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-ip_reveal.timers">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ip_reveal.timers" title="Permalink to this headline">¶</a></h2>
+<p>File: ip_reveal/tools/timers/__init__
+Author: Taylor-Jayde Blackstone &lt;<a class="reference external" href="mailto:t&#46;blackstone&#37;&#52;&#48;inspyre&#46;tech">t<span>&#46;</span>blackstone<span>&#64;</span>inspyre<span>&#46;</span>tech</a>&gt;
+Added in Version: 1.0(dev) - 10/26/2020</p>
+<dl class="simple">
+<dt>Description:</dt><dd><p>This package handles the necessary time-keeping routines for “IP Reveal”.</p>
+</dd>
+<dt>Design:</dt><dd><p>This package lends it’s opening preparation to the “start()” method (which should not be confused with the similarly
+named: “_start()”). So, if - for example - one wanted to get all parts if the timer working, and keeping time in the
+easiest way possible (with this package), they could write something out like the following example</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>from time import sleep
+from ip_reveal import timers</p>
+<p>timer = timers</p>
+<p>timer.start()</p>
+<dl class="simple">
+<dt>while True:</dt><dd><p>timer_state = timer.get_elapsed()
+print(timer_state)</p>
+</dd>
+</dl>
+<p># And resetting is even easier
+timer.reset()</p>
+<dl class="py exception">
+<dt id="ip_reveal.timers.TimerStartError">
+<em class="property">exception </em><code class="sig-prename descclassname">ip_reveal.timers.</code><code class="sig-name descname">TimerStartError</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ip_reveal/timers.html#TimerStartError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ip_reveal.timers.TimerStartError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ip_reveal.timers.clear">
+<code class="sig-prename descclassname">ip_reveal.timers.</code><code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ip_reveal/timers.html#clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ip_reveal.timers.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ip_reveal.timers.get_elapsed">
+<code class="sig-prename descclassname">ip_reveal.timers.</code><code class="sig-name descname">get_elapsed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ip_reveal/timers.html#get_elapsed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ip_reveal.timers.get_elapsed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ip_reveal.timers.refresh">
+<code class="sig-prename descclassname">ip_reveal.timers.</code><code class="sig-name descname">refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ip_reveal/timers.html#refresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ip_reveal.timers.refresh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ip_reveal.timers.start">
+<code class="sig-prename descclassname">ip_reveal.timers.</code><code class="sig-name descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ip_reveal/timers.html#start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ip_reveal.timers.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Taylor-Jayde J. Blackstone.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

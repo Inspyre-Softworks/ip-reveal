@@ -1,0 +1,232 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  
+  <title>ip_reveal.popups package &mdash; IP Reveal 1.0.1 documentation</title>
+  
+
+  
+  <link href="_static/css/theme.css" rel="stylesheet" type="text/css" />
+  <link href="_static/pygments.css" rel="stylesheet" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js" type="text/javascript"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script src="_static/js/theme.js" type="text/javascript"></script>
+
+    
+    <link href="genindex.html" rel="index" title="Index" />
+    <link href="search.html" rel="search" title="Search" />
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav class="wy-nav-side" data-toggle="wy-nav-shift">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a class="icon icon-home" href="index.html"> IP Reveal
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form action="search.html" class="wy-form" id="rtd-search-form" method="get">
+    <input name="q" placeholder="Search docs" type="text" />
+    <input name="check_keywords" type="hidden" value="yes" />
+    <input name="area" type="hidden" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div aria-label="main navigation" class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">ip_reveal.popups package</a><ul>
+<li><a class="reference internal" href="#module-ip_reveal.popups">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section class="wy-nav-content-wrap" data-toggle="wy-nav-shift">
+
+      
+      <nav aria-label="top navigation" class="wy-nav-top">
+        
+          <i class="fa fa-bars" data-toggle="wy-nav-top"></i>
+          <a href="index.html">IP Reveal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div aria-label="breadcrumbs navigation" role="navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a class="icon icon-home" href="index.html"></a> &raquo;</li>
+        
+      <li>ip_reveal.popups package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/ip_reveal.popups.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div class="document" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="ip-reveal-popups-package">
+<h1>ip_reveal.popups package<a class="headerlink" href="#ip-reveal-popups-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-ip_reveal.popups">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ip_reveal.popups" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="ip_reveal.popups.ip_change_notify">
+<code class="sig-prename descclassname">ip_reveal.popups.</code><code class="sig-name descname">ip_change_notify</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">old</span></em>, <em class="sig-param"><span class="n">new</span></em>, <em class="sig-param"><span class="n">muted</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ip_reveal/popups.html#ip_change_notify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ip_reveal.popups.ip_change_notify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Play and alert sound and produce a notification in the center of the screen alerting the user that their external IP
+address has changed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>old</strong> (<em>str</em>) – The old IP Address, as recorded</p></li>
+<li><p><strong>new</strong> (<em>str</em>) – The new IP Address that the machine now has, as recorded</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ip_reveal.popups.notify">
+<code class="sig-prename descclassname">ip_reveal.popups.</code><code class="sig-name descname">notify</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span></em>, <em class="sig-param"><span class="n">duration</span><span class="o">=</span><span class="default_value">7000</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">location</span><span class="o">=</span><span class="default_value">(750, 450)</span></em>, <em class="sig-param"><span class="n">icon</span><span class="o">=</span><span class="default_value">b'iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAABmJLR0QA/wD/AP+gvaeTAAAHLUlEQVRYhc2Ya4xVVxWAv7X3Oee+ZoZHsUUepRZqxCYlmrTUpI0xplLTNrX+MMaYkgFjkUctDKXGX/PLxhLAyEMxoUBStbU2aRNMajVRU5NSqA2QUkoZOzAgw2Ng7nDnvs5jL3/MDN6Ze+cFpLh+7XP22mt9Z+21V9bZ8H8ucqMMbV69+3sKWwAV5Zl121tfvhF2rxvw5xt2NXtluxnV1i/47riJojnHNJ1D3K4oq+ufe2F54aYBblyz5xHjdJtvyH49HedmWpcr9Ja4ZHx9x2YLVeSSOFau29H65qcGuPOHO/1CKnhMlJ8C99zhadcDqWh+rzO8E1qS2PElV2KKSzjiN/WfVC+jhvfFmedzUWXfU795KrqhgNtW7b2latxdorpQkSXAwwLpWdad+Eo6WZAWTR8OLUdDy3zPEYUxXSZgQVJloVaoIhzzspdO4bUARYU3Rfgz8FHKmROrty+9NCnAzat2f1eF9cBMYCqQAzBwYbrR7s/7Se4Oz93pCeZkbPhXaAG4P0iY6zkKvSXOis9hm0ER7nZlbnchsQjnTVDpMkG+B5uOBmwDFIE8cA50Y9u2Za+MCvj8j347LbBh9zzffTTLupY0ZJpFp0wxmrGDmnkndMWG45GlqvBFP+GeVII3aKPQWwIgQfjYpDhu0wQ45iUh8zSkSd3gPPSLpWJMHBqTXMTv78RrNh63rf1Fa36IyasFtH44A0dqcRAvygqUnNCVCJ2J4YoTLjqh5IQWURb6MXf5Skq04dZYlIWuwnxXpcsGnDQBHaR4LO4jLx4XxCOFY7aLvCBRb4ZEqU6vhcjxmcGI1gNKaPvwEiIVEKXHCcciS06UFgOLfMcs62g2DaAEgsWfo6kc0v+PEzCoEqAsSKosoEqMYICiGM4aj1AM6UT5rEaEg5sZSHyl1uwwwOLMdL65p0g4+Hy757jdcw0jNFLM9CZSX11ACqh8eI74Qn358wap57qQuS4cNjd0tPN9Xt8wu7UP7e3fCUU0Dhvv2tjikqtDTZIxFBvLQHTVte9prYwKCGBUSqFOoDzKcB2t1ACW40kDRiJYJBz5vh5QtH88QC+VxgapYZBajQbyTsFVJlWLAYgxGChPAJC+Mc2LDGTSyG9wikYxrhqBm3yOhICg/eMCJsjFyljnQpUkrJJUq6AjQCoxOkb0Uk1ZjK1zOQhoULg4LqBT01HQUYpbDWQdHKCVCFdqDOinA7ItOXLTWhpCFsUQiRwdF1BJOvucmXwSMZB7rlyX54gxpLIZRAQv8PEz6XpAY9Qpn4x87418oWqOXAGjXEOrU4nRsL7EqHP0X+6jafoUqqUyUWX4RyjQrwY1HBm5tn6LY7PfqXo9bvKtooYxGo5eYor5Qh0cwGXxiEUkUbd/XMBnf/3kBYN2nIknDxh/eI7yoTOjzqtrfPrOiY+Hnnlu2/Kz4wICOHilK7HFyQImp/NUT16e7DK6recS5KVGcw0BjZM/9iaSu9xgm0WkYW5KJiC74gFu+8lD2Ob6QzCa5MWjD2tE9dUJA67d0XpI0Hc/CE21bkGQRoKgflFgMRkfk/GRjD9hwA4bYODQ2u3L3m80X3eKh0SRTZ2J97t71ZGpKYtJWOFqL1Wr31em9NIBSoWwYSfTSCpiOC2BS0RfGE2ncVkHCjNOvYbqB+9VR+SiaiO+AfjuK4SnJ56DR01aFTr6b+lquL1jAra3tzunbPh3bLLnEkNSk3nDxjW8jv+NdaTeiHGPeHQaX3D8uL29fdTaZEebAHjr4BufLLnvWwu7E5l7ODLpOVbJGNhX9kkLTDXK36oeZYVbrXKgaulOLDM1psOkOGFTzHUR/zE+B70sd7qQvFj+4jfTY4IwRF5v2976s7EYRo3gkIifrCyrFCOVq11v7GDok+Oa6MRAPNiCJTLQhA5EDBId0hFihIJKXsNwxbj+x1MA2Lxm94Oq8td7g7h6d5A09zjDFOPwgV4nZERJCxScUOwrk8NRFaGCYYomxCIUsEzTmA6T1iM2HSfwjWe3tf79hgACbFr94veBvQ+mk+J8zzWPpjf029lITptAD5osaljWtrV1z0T8jpmDtfLWgTeOLFn8RP50ZB7NGL0yw2rDahyO0g+esil30GYRIxvatrb+aqJ+Jww4APn6uw/d9/jZM4n37QTOz7JaF8lGgMdsJjlsUoKyum1b6y8n4/Oabrc2r9z9MKKvzvG072uZeHbtSavdYgcc8nJhpwSI6tJruTO85uu3TWt2LRK1+6ZaJ99MR7MDGQ4Yi7Dfy5bP45fVucfX71j+z2vxc133g5tX7J2tnvtTWnTmo5n41iajUugtUcbwtp8rFfDOovJI2/alH1+rj+u+Yd3yzO6pGvOahS8vycR+pVDJvm1z5VDkPfGTJ9Zt+cHk+68bCQjQ3v6HoPlicSfCkwAov/dNYfnTW5+u64Zuqmxc9eLiTWt233+zOT5V+S8B3z5ULV+fGgAAAABJRU5ErkJggg== '</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ip_reveal/popups.html#notify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ip_reveal.popups.notify" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Taylor-Jayde J. Blackstone.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ip-reveal"
-version = "1.0.1"
+version = "1.0.1-"
 description = "A GUI-based widget that checks your IP address periodically, sending notifications if it changes."
 authors = ["Taylor B. <tayjaybabee@gmail.com>"]
 license = "WTFPL"
@@ -16,6 +16,7 @@ inspy-logger = "2.0.1b1"
 
 [tool.poetry.dev-dependencies]
 Sphinx = "^3.4.1"
+sphinx-rtd-theme = "^0.5.1"
 
 [tool.poetry.scripts]
 ip-reveal = 'ip_reveal:main'
