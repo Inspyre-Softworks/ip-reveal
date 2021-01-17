@@ -150,76 +150,62 @@
   <h1>Source code for ip_reveal</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">socket</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-
+<span class="kn">from</span> <span class="nn">argparse</span> <span class="kn">import</span> <span class="n">ArgumentParser</span>
 <span class="kn">from</span> <span class="nn">platform</span> <span class="kn">import</span> <span class="n">node</span>
-<span class="kn">from</span> <span class="nn">socket</span> <span class="kn">import</span> <span class="n">gaierror</span>
+<span class="kn">from</span> <span class="nn">socket</span> <span class="kn">import</span> <span
+                   class="n">gaierror</span>
 <span class="kn">from</span> <span class="nn">urllib.error</span> <span class="kn">import</span> <span class="n">URLError</span>
 
-<span class="kn">import</span> <span class="nn">PySimpleGUIQt</span> <span class="k">as</span> <span class="nn">Qt</span>
-<span class="kn">from</span> <span class="nn">inspy_logger</span> <span class="kn">import</span> <span class="n">getLogger</span><span class="p">,</span> <span class="n">InspyLogger</span>
+<span class="kn">import</span> <span class="nn">PySimpleGUIQt</span> <span class="k">as</span> <span
+                   class="nn">Qt</span>
+<span class="kn">from</span> <span class="nn">inspy_logger</span> <span class="kn">import</span> <span
+                   class="n">LEVELS</span> <span class="k">as</span> <span class="n">LOG_LEVELS</span><span
+                   class="p">,</span> <span class="n">getLogger</span>
+<span class="kn">from</span> <span class="nn">inspy_logger</span> <span class="kn">import</span> <span class="n">InspyLogger</span>
+<span class="kn">from</span> <span class="nn">inspyred_print</span> <span class="kn">import</span> <span
+                   class="n">Color</span><span class="p">,</span> <span class="n">Format</span>
 <span class="kn">from</span> <span class="nn">requests</span> <span class="kn">import</span> <span class="n">get</span>
-<span class="kn">from</span> <span class="nn">requests.exceptions</span> <span class="kn">import</span> <span class="ne">ConnectionError</span>
+<span class="kn">from</span> <span class="nn">requests.exceptions</span> <span class="kn">import</span> <span
+                   class="ne">ConnectionError</span>
 <span class="kn">from</span> <span class="nn">urllib3.exceptions</span> <span class="kn">import</span> <span class="n">MaxRetryError</span>
-<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span
+                   class="n">Thread</span>
 
-<span class="kn">from</span> <span class="nn">ip_reveal.assets.ui_elements.backgrounds</span> <span class="kn">import</span> <span class="n">NEON_DARK_FP</span>
+<span class="kn">from</span> <span class="nn">ip_reveal.assets.ui_elements.backgrounds</span> <span
+                   class="kn">import</span> <span class="n">NEON_DARK_FP</span>
+<span class="kn">from</span> <span class="nn">ip_reveal.assets.ui_elements.icons</span> <span
+                   class="kn">import</span> <span class="n">app_main_24x24</span>
+<span class="kn">from</span> <span class="nn">ip_reveal.assets.ui_elements.icons</span> <span
+                   class="kn">import</span> <span class="n">app_quit_50x50_fp</span>
+<span class="kn">from</span> <span class="nn">ip_reveal.assets.ui_elements.icons</span> <span
+                   class="kn">import</span> <span class="n">app_refresh_50x50_fp</span>
 
-<span class="kn">from</span> <span class="nn">ip_reveal.assets.ui_elements.icons</span> <span class="kn">import</span> <span class="n">app_main_24x24</span><span class="p">,</span> \
-                                               <span class="n">app_quit_50x50_fp</span><span class="p">,</span> \
-                                               <span class="n">app_refresh_50x50_fp</span>
-
-<span class="kn">from</span> <span class="nn">ip_reveal.tools.arguments</span> <span class="kn">import</span> <span class="n">Reader</span>
-
-<span class="kn">import</span> <span class="nn">ip_reveal.timers</span> <span class="k">as</span> <span class="nn">timer</span>
+<span class="kn">import</span> <span class="nn">ip_reveal.timers</span> <span class="k">as</span> <span
+                   class="nn">timer</span>
 <span class="kn">from</span> <span class="nn">ip_reveal.popups</span> <span class="kn">import</span> <span class="n">ip_change_notify</span>
 <span class="kn">from</span> <span class="nn">ip_reveal.tools</span> <span class="kn">import</span> <span class="n">commify</span>
 
 <span class="n">quit_icon</span> <span class="o">=</span> <span class="n">app_quit_50x50_fp</span>
 <span class="n">refresh_icon</span> <span class="o">=</span> <span class="n">app_refresh_50x50_fp</span>
 
+<span class="n">end</span> <span class="o">=</span> <span class="n">Format</span><span class="p">()</span><span
+                   class="o">.</span><span class="n">end_mod</span>
+<span class="n">color</span> <span class="o">=</span> <span class="n">Color</span><span class="p">()</span>
+<span class="n">red</span> <span class="o">=</span> <span class="n">color</span><span class="o">.</span><span class="n">red</span>
+
 <span class="n">update_window_timer</span> <span class="o">=</span> <span class="kc">None</span>
 
 <span class="n">timer</span> <span class="o">=</span> <span class="n">timer</span>
 <span class="n">timer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
+<span class="n">cached_ext_ip</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="n">ip_hist</span> <span class="o">=</span> <span class="p">[]</span>
 
 <span class="n">inet_down</span> <span class="o">=</span> <span class="kc">False</span>
 
-<span class="c1"># Set up a name for our logging device</span>
-<span class="n">log_name</span> <span class="o">=</span> <span class="s2">&quot;IPReveal&quot;</span>
 
-<span class="n">GH_URL</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/Inspyre-Softworks/ip-reveal&quot;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">The URL to the Github repo page</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
-<span class="c1"># Declare a variable named &#39;acc&#39; for our accumulator and set it at int(0)</span>
-<span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
-
-<span class="c1"># For statistics tracking; declare a variable called &#39;refresh_num&#39; and start it at 0</span>
-<span class="n">refresh_num</span> <span class="o">=</span> <span class="mi">0</span>
-
-<span class="c1"># ...and one that will hold our total cycle count</span>
-<span class="n">total_acc</span> <span class="o">=</span> <span class="mi">0</span>
-
-<span class="c1"># Set up a placeholder variable for our window object</span>
-<span class="n">window</span> <span class="o">=</span> <span class="kc">None</span>
-
-<span class="c1"># Set up two variables that will act as caches for the external and internal IPs</span>
-<span class="n">cached_ext_ip</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="n">cached_int_ip</span> <span class="o">=</span> <span class="kc">None</span>
-
-<span class="n">t_text</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="n">refreshing</span> <span class="o">=</span> <span class="kc">None</span>
-
-<span class="c1"># Set up a global variable to keep track of mute status</span>
-<span class="n">mute</span> <span class="o">=</span> <span class="kc">None</span>
-
-<span class="c1"># Set up a global variable to keep track of if offline or not</span>
-<span class="n">offline</span> <span class="o">=</span> <span class="kc">None</span>
-
-<div class="viewcode-block" id="get_hostname"><a class="viewcode-back" href="../index.html#ip_reveal.get_hostname">[docs]</a><span class="k">def</span> <span class="nf">get_hostname</span><span class="p">():</span>
+<div class="viewcode-block" id="get_hostname"><a class="viewcode-back" href="../ip_reveal.html#ip_reveal.get_hostname">[docs]</a><span
+        class="k">def</span> <span class="nf">get_hostname</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get_hostname</span>
 
@@ -241,7 +227,8 @@
     <span class="k">return</span> <span class="n">hostname</span></div>
 
 
-<div class="viewcode-block" id="get_external"><a class="viewcode-back" href="../index.html#ip_reveal.get_external">[docs]</a><span class="k">def</span> <span class="nf">get_external</span><span class="p">():</span>
+<div class="viewcode-block" id="get_external"><a class="viewcode-back" href="../ip_reveal.html#ip_reveal.get_external">[docs]</a><span
+        class="k">def</span> <span class="nf">get_external</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get_external</span>
 
@@ -250,11 +237,15 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        str: The system&#39;s apparent external IP-Address in the form of a string.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">cached_ext_ip</span><span class="p">,</span> <span class="n">inet_down</span><span class="p">,</span> <span class="n">ip_hist</span><span class="p">,</span> <span class="n">mute</span>
+    <span class="k">global</span> <span class="n">cached_ext_ip</span><span class="p">,</span> <span
+            class="n">inet_down</span><span class="p">,</span> <span class="n">ip_hist</span>
 
     <span class="c1"># Prepare the logger</span>
-    <span class="n">_log</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="n">log_name</span> <span class="o">+</span> <span class="s1">&#39;.get_external&#39;</span><span class="p">)</span>
-    <span class="n">_debug</span> <span class="o">=</span> <span class="n">_log</span><span class="o">.</span><span class="n">debug</span>
+    <span class="n">_log</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span
+            class="n">log_name</span> <span class="o">+</span> <span class="s1">&#39;.get_external&#39;</span><span
+            class="p">)</span>
+    <span class="n">_debug</span> <span class="o">=</span> <span class="n">_log</span><span class="o">.</span><span
+            class="n">debug</span>
 
     <span class="c1"># Try contacting IPIFY.org with a basic request and read the returned text.</span>
     <span class="c1">#</span>
@@ -271,33 +262,43 @@
     <span class="c1"># to another service?)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">ConnectionError</span><span class="p">,</span> <span class="n">MaxRetryError</span><span class="p">,</span> <span class="n">gaierror</span><span class="p">,</span> <span class="n">URLError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">inet_down</span><span class="p">:</span>
-            <span class="n">_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to establish an internet connection.&quot;</span><span class="p">)</span>
+            <span class="n">_log</span><span class="o">.</span><span class="n">warning</span><span
+            class="p">(</span><span class="s2">&quot;Unable to establish an internet connection.&quot;</span><span
+            class="p">)</span>
             <span class="n">inet_down</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">external</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">if</span> <span class="n">external</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">external</span> <span class="ow">is</span> <span
+            class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">cached_ext_ip</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cached_ext_ip</span><span
+            class="p">:</span>
             <span class="n">cached_ext_ip</span> <span class="o">=</span> <span class="n">external</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">cached_ext_ip</span> <span class="o">==</span> <span class="n">external</span><span class="p">:</span>
-                <span class="n">ip_change_notify</span><span class="p">(</span><span class="n">cached_ext_ip</span><span class="p">,</span> <span class="n">external</span><span class="p">,</span> <span class="n">mute</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cached_ext_ip</span> <span class="o">==</span> <span
+            class="n">external</span><span class="p">:</span>
+                <span class="n">ip_change_notify</span><span class="p">(</span><span class="n">cached_ext_ip</span><span
+            class="p">,</span> <span class="n">external</span><span class="p">)</span>
                 <span class="n">cached_ext_ip</span> <span class="o">=</span> <span class="n">external</span>
-                <span class="n">ip_hist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">external</span><span class="p">)</span>
-
 
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ip_hist</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">_debug</span><span class="p">(</span><span class="s2">&quot;Added first IP to history list.&quot;</span><span class="p">)</span>
-        <span class="n">ip_hist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">external</span><span class="p">)</span>
-        <span class="n">_debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;IP History: </span><span class="si">{</span><span class="n">ip_hist</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ip_hist</span><span
+            class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">_debug</span><span class="p">(</span><span class="s2">&quot;Added first IP to history list.&quot;</span><span
+            class="p">)</span>
+        <span class="n">ip_hist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span
+            class="n">external</span><span class="p">)</span>
+        <span class="n">_debug</span><span class="p">(</span><span class="sa">f</span><span
+            class="s2">&quot;IP History: </span><span class="si">{</span><span class="n">ip_hist</span><span class="si">}</span><span
+            class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># Return the text result we get from the API to the caller.</span>
     <span class="k">return</span> <span class="n">external</span></div>
 
 
-<div class="viewcode-block" id="get_internal"><a class="viewcode-back" href="../index.html#ip_reveal.get_internal">[docs]</a><span class="k">def</span> <span class="nf">get_internal</span><span class="p">():</span>
+<div class="viewcode-block" id="get_internal"><a class="viewcode-back" href="../ip_reveal.html#ip_reveal.get_internal">[docs]</a><span
+        class="k">def</span> <span class="nf">get_internal</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get_internal</span>
 
@@ -339,7 +340,10 @@
     <span class="k">return</span> <span class="n">IP</span></div>
 
 
-<div class="viewcode-block" id="update_window"><a class="viewcode-back" href="../index.html#ip_reveal.update_window">[docs]</a><span class="k">def</span> <span class="nf">update_window</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="update_window"><a class="viewcode-back"
+                                                  href="../ip_reveal.html#ip_reveal.update_window">[docs]</a><span
+        class="k">def</span> <span class="nf">update_window</span><span class="p">(</span><span
+        class="n">values</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    A function that handles the following processes for updating the IP Reveal window:</span>
@@ -358,15 +362,25 @@
 <span class="sd">        None</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">acc</span><span class="p">,</span> <span class="n">refresh_num</span><span class="p">,</span> <span class="n">timer</span><span class="p">,</span> <span class="n">cached_ext_ip</span><span class="p">,</span> <span class="n">ip_hist</span><span class="p">,</span> <span class="n">mute</span><span class="p">,</span> <span class="n">refreshing</span>
+    <span class="k">global</span> <span class="n">acc</span><span class="p">,</span> <span
+            class="n">refresh_num</span><span class="p">,</span> <span class="n">timer</span><span
+            class="p">,</span> <span class="n">cached_ext_ip</span><span class="p">,</span> <span
+            class="n">ip_hist</span>
 
     <span class="c1"># Start the logger for this operation</span>
-    <span class="n">_log</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="n">log_name</span> <span class="o">+</span> <span class="s1">&#39;.update_window&#39;</span><span class="p">)</span>
+    <span class="n">_log</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span
+            class="n">log_name</span> <span class="o">+</span> <span class="s1">&#39;.update_window&#39;</span><span
+            class="p">)</span>
 
     <span class="c1"># If set to do so; spit out some debug data</span>
-    <span class="n">u_debug</span> <span class="o">=</span> <span class="n">_log</span><span class="o">.</span><span class="n">debug</span>
-    <span class="n">u_debug</span><span class="p">(</span><span class="s1">&#39;TIMEOUT - Refreshing window...&#39;</span><span class="p">)</span>
-    <span class="n">u_debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;acc = </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">u_debug</span> <span class="o">=</span> <span class="n">_log</span><span class="o">.</span><span
+            class="n">debug</span>
+    <span class="n">u_debug</span><span class="p">(</span><span
+            class="s1">&#39;TIMEOUT - Refreshing window...&#39;</span><span class="p">)</span>
+    <span class="n">u_debug</span><span class="p">(</span><span class="sa">f</span><span
+            class="s1">&#39;acc = </span><span class="si">{</span><span class="nb">str</span><span
+            class="p">(</span><span class="n">acc</span><span class="p">)</span><span class="si">}</span><span
+            class="s1">&#39;</span><span class="p">)</span>
 
     <span class="c1"># Reset the frame accumulator</span>
     <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
@@ -383,7 +397,6 @@
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">ip</span><span class="p">:</span>
         <span class="n">ip</span> <span class="o">=</span> <span class="s2">&quot;Offline&quot;</span>
-        <span class="n">offline</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="n">local_ip</span> <span class="o">=</span> <span class="n">get_internal</span><span class="p">()</span>
     <span class="n">hostname</span> <span class="o">=</span> <span class="n">get_hostname</span><span class="p">()</span>
@@ -398,19 +411,35 @@
         <span class="n">t_color</span> <span class="o">=</span> <span class="s2">&quot;green&quot;</span>
 
     <span class="c1"># Update the relevant fields with our fresh data</span>
-    <span class="n">window</span><span class="p">[</span><span class="s1">&#39;EXTIP_OUT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="n">text_color</span><span class="o">=</span><span class="n">t_color</span><span class="p">)</span>
-    <span class="n">window</span><span class="p">[</span><span class="s1">&#39;INTIP_OUT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">local_ip</span><span class="p">)</span>
-    <span class="n">window</span><span class="p">[</span><span class="s1">&#39;HOSTNAME_OUT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">hostname</span><span class="p">)</span>
-    <span class="n">window</span><span class="p">[</span><span class="s1">&#39;TIME_SINCE_Q_OUT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;Just now...&quot;</span><span class="p">)</span>
+    <span class="n">window</span><span class="p">[</span><span class="s1">&#39;EXTIP_OUT&#39;</span><span
+            class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span
+            class="n">ip</span><span class="p">,</span> <span class="n">text_color</span><span class="o">=</span><span
+            class="n">t_color</span><span class="p">)</span>
+    <span class="n">window</span><span class="p">[</span><span class="s1">&#39;INTIP_OUT&#39;</span><span
+            class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span
+            class="n">local_ip</span><span class="p">)</span>
+    <span class="n">window</span><span class="p">[</span><span class="s1">&#39;HOSTNAME_OUT&#39;</span><span
+            class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span
+            class="n">hostname</span><span class="p">)</span>
+    <span class="n">window</span><span class="p">[</span><span class="s1">&#39;TIME_SINCE_Q_OUT&#39;</span><span
+            class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span
+            class="s2">&quot;Just now...&quot;</span><span class="p">)</span>
 
     <span class="c1"># Make some notes in the debug log that might be useful</span>
-    <span class="n">u_debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Updated window with new values: </span><span class="si">{</span><span class="n">values</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">u_debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;This was refresh number </span><span class="si">{</span><span class="n">refresh_num</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+    <span class="n">u_debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Updated window with new values: </span><span
+            class="si">{</span><span class="n">values</span><span class="si">}</span><span class="s1">&#39;</span><span
+            class="p">)</span>
+    <span class="n">u_debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;This was refresh number </span><span
+            class="si">{</span><span class="n">refresh_num</span><span class="si">}</span><span
+            class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="c1"># if not ip == cached_ext_ip:</span>
-    <span class="c1">#     ip_change_notify(cached_ext_ip, ip, mute)</span>
-    <span class="c1">#     cached_ext_ip = ip</span>
-    <span class="c1">#     ip_hist.append(ip)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ip</span> <span class="o">==</span> <span
+            class="n">cached_ext_ip</span><span class="p">:</span>
+        <span class="n">ip_change_notify</span><span class="p">(</span><span class="n">cached_ext_ip</span><span
+            class="p">,</span> <span class="n">ip</span><span class="p">)</span>
+        <span class="n">cached_ext_ip</span> <span class="o">=</span> <span class="n">ip</span>
+        <span class="n">ip_hist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span
+            class="n">ip</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="safe_exit"><a class="viewcode-back" href="../ip_reveal.html#ip_reveal.safe_exit">[docs]</a><span class="k">def</span> <span class="nf">safe_exit</span><span class="p">(</span><span class="n">win</span><span class="p">,</span> <span class="n">exit_reason</span><span class="p">):</span>
@@ -420,79 +449,167 @@
             <span class="n">tmp_hist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;During operation you switched IP addresses </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ip_hist</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> times.&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Held IP addresses: </span><span class="si">{</span><span class="n">tmp_hist</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exiting safely. Reason: </span><span class="si">{</span><span class="n">exit_reason</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The IP address was refreshed </span><span class="si">{</span><span class="n">refresh_num</span><span class="si">}</span><span class="s2"> times&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Window underwent </span><span class="si">{</span><span class="n">total_acc</span><span class="si">}</span><span class="s2"> cycles&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">timer</span><span class="o">.</span><span class="n">start_time</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Held IP addresses: </span><span
+            class="si">{</span><span class="n">tmp_hist</span><span class="si">}</span><span
+            class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exiting safely. Reason: </span><span
+            class="si">{</span><span class="n">exit_reason</span><span class="si">}</span><span class="s2">&quot;</span><span
+            class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The IP address was refreshed </span><span
+            class="si">{</span><span class="n">refresh_num</span><span class="si">}</span><span
+            class="s2"> times&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Window underwent </span><span
+            class="si">{</span><span class="n">total_acc</span><span class="si">}</span><span
+            class="s2"> cycles&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">timer</span><span class="o">.</span><span
+            class="n">start_time</span><span class="p">)</span>
 
     <span class="n">win</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../ip_reveal.html#ip_reveal.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="k">global</span> <span class="n">total_acc</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">refresh_num</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">mute</span><span class="p">,</span> <span class="n">t_text</span><span class="p">,</span> <span class="n">refreshing</span>
+<span class="c1"># Set up a name for our logging device</span>
+<span class="n">log_name</span> <span class="o">=</span> <span class="s2">&quot;IPReveal&quot;</span>
+
+<span class="c1"># Declare a variable named &#39;acc&#39; for our accumulator and set it at int(0)</span>
+<span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># For statistics tracking; declare a variable called &#39;refresh_num&#39; and start it at 0</span>
+<span class="n">refresh_num</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># ...and one that will hold our total cycle count</span>
+<span class="n">total_acc</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># Set up a placeholder variable for our window object</span>
+<span class="n">window</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="c1"># Set up two variables that will act as caches for the external and internal IPs</span>
+<span class="n">cached_ext_ip</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">cached_int_ip</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../ip_reveal.html#ip_reveal.main">[docs]</a><span
+        class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">total_acc</span><span class="p">,</span> <span
+            class="n">acc</span><span class="p">,</span> <span class="n">refresh_num</span><span
+            class="p">,</span> <span class="n">window</span>
 
     <span class="c1"># Timer text</span>
     <span class="n">t_text</span> <span class="o">=</span> <span class="s2">&quot;Just now...&quot;</span>
 
     <span class="c1"># Qt.theme(&#39;DarkBlue3&#39;)</span>
 
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">Reader</span><span class="p">()</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="s1">&#39;ip-reveal&#39;</span><span class="p">,</span> <span class="n">description</span><span
+            class="o">=</span><span
+            class="s1">&#39;A program that will show you your external IP address.&#39;</span><span class="p">)</span>
 
-    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parsed</span>
-    <span class="n">mute</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">mute_all</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span
+            class="p">(</span><span class="s1">&#39;-l&#39;</span><span class="p">,</span> <span class="s1">&#39;--log-level&#39;</span><span
+            class="p">,</span>
+                        <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span
+            class="p">,</span>
+                        <span class="n">choices</span><span class="o">=</span><span class="n">LOG_LEVELS</span><span
+            class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="s1">&#39;info&#39;</span>
+                        <span class="p">)</span>
+
+    <span class="c1"># Argument to mute sounds</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span
+            class="p">(</span><span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="s1">&#39;--mute-all&#39;</span><span
+            class="p">,</span>
+                        <span class="n">action</span><span class="o">=</span><span
+            class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+                        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span
+            class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Starts the program with all program audio muted.&quot;</span><span
+            class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="kc">False</span>
+                        <span class="p">)</span>
+
+    <span class="n">sub_parsers</span> <span class="o">=</span> <span class="n">parser</span><span
+            class="o">.</span><span class="n">add_subparsers</span><span class="p">(</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;subcommands&#39;</span><span class="p">,</span> <span
+            class="n">help</span><span class="o">=</span><span
+            class="s1">&#39;The sub-commands for IP Reveal&#39;</span><span class="p">)</span>
+
+    <span class="n">ext_ip_parse</span> <span class="o">=</span> <span class="n">sub_parsers</span><span
+            class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s1">&#39;get-external&#39;</span><span
+            class="p">,</span>
+                                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Return the external IP to the command-line and nothing else.&#39;</span><span
+            class="p">)</span>
+    <span class="n">host_parse</span> <span class="o">=</span> <span class="n">sub_parsers</span><span
+            class="o">.</span><span class="n">add_parser</span><span class="p">(</span>
+        <span class="s1">&#39;get-host&#39;</span><span class="p">,</span> <span class="n">help</span><span
+            class="o">=</span><span
+            class="s1">&#39;Return the hostname to the command-line and nothing else.&#39;</span><span
+            class="p">)</span>
+    <span class="n">local_parse</span> <span class="o">=</span> <span class="n">sub_parsers</span><span
+            class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s1">&#39;get-local&#39;</span><span
+            class="p">,</span>
+                                         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Return the local IP-Address to the command-line and nothing &#39;</span>
+                                              <span class="s1">&#39;else.&#39;</span><span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span
+            class="n">parse_args</span><span class="p">()</span>
 
     <span class="c1"># Set up the logging device</span>
-    <span class="n">log_device</span> <span class="o">=</span> <span class="n">InspyLogger</span><span class="p">()</span><span class="o">.</span><span class="n">LogDevice</span><span class="p">(</span><span class="n">log_name</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
+    <span class="n">log_device</span> <span class="o">=</span> <span class="n">InspyLogger</span><span
+            class="p">(</span><span class="n">log_name</span><span class="p">,</span> <span class="n">args</span><span
+            class="o">.</span><span class="n">log_level</span><span class="p">)</span>
 
     <span class="c1"># Start the logging device</span>
-    <span class="n">log</span> <span class="o">=</span> <span class="n">log_device</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-    <span class="n">debug</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">debug</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">log_device</span><span class="o">.</span><span
+            class="n">start</span><span class="p">(</span><span class="n">mute</span><span class="o">=</span><span
+            class="n">args</span><span class="o">.</span><span class="n">subcommands</span><span class="p">)</span>
+    <span class="n">debug</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span
+            class="n">debug</span>
 
     <span class="c1"># Announce that we did that</span>
-    <span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Started my logger!&#39;</span><span class="p">)</span>
-    <span class="n">log</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="n">log_name</span> <span class="o">+</span> <span class="s1">&#39;.Main&#39;</span><span class="p">)</span>
+    <span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Started my logger!&#39;</span><span
+            class="p">)</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span
+            class="n">log_name</span> <span class="o">+</span> <span class="s1">&#39;.Main&#39;</span><span
+            class="p">)</span>
     <span class="c1"># Alias the log.debug signature for ease-of-use</span>
-    <span class="n">debug</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">debug</span>
-    <span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Program muted: </span><span class="si">{</span><span class="n">mute</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">debug</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span
+            class="n">debug</span>
 
     <span class="c1"># See if we got one of the subcommands assigned.</span>
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">subcommands</span> <span class="o">==</span> <span class="s1">&#39;get-external&#39;</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">get_external</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span
+            class="n">subcommands</span> <span class="o">==</span> <span class="s1">&#39;get-external&#39;</span><span
+            class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">get_external</span><span
+            class="p">())</span>
         <span class="n">exit</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">subcommands</span> <span class="o">==</span> <span class="s1">&#39;get-host&#39;</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">get_hostname</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span
+            class="n">subcommands</span> <span class="o">==</span> <span class="s1">&#39;get-host&#39;</span><span
+            class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">get_hostname</span><span
+            class="p">())</span>
         <span class="n">exit</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">subcommands</span> <span class="o">==</span> <span class="s1">&#39;get-local&#39;</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">get_internal</span><span class="p">())</span>
-        <span class="n">exit</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">subcommands</span> <span class="o">==</span> <span class="s1">&#39;get-github&#39;</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">GH_URL</span><span class="p">)</span>
-        <span class="n">exit</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">subcommands</span> <span class="o">==</span> <span class="s1">&#39;get-network-info&#39;</span><span class="p">:</span>
-        <span class="n">ext</span> <span class="o">=</span> <span class="n">get_external</span><span class="p">()</span>
-        <span class="n">local</span> <span class="o">=</span> <span class="n">get_internal</span><span class="p">()</span>
-        <span class="n">hostname</span> <span class="o">=</span> <span class="n">get_hostname</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Hostname:    </span><span class="si">{</span><span class="n">hostname</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-              <span class="sa">f</span><span class="s2">&quot;External IP: </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-              <span class="sa">f</span><span class="s2">&quot;Local IP:    </span><span class="si">{</span><span class="n">local</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span
+            class="n">subcommands</span> <span class="o">==</span> <span class="s1">&#39;get-local&#39;</span><span
+            class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">get_internal</span><span
+            class="p">())</span>
         <span class="n">exit</span><span class="p">()</span>
 
+    <span class="n">status_bar_layout</span> <span class="o">=</span> <span class="p">[</span>
+
+    <span class="p">]</span>
+
     <span class="n">bg_color</span> <span class="o">=</span> <span class="s2">&quot;340245&quot;</span>
-    <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">220</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">220</span><span
+            class="p">,</span> <span class="mi">50</span><span class="p">)</span>
     <span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;=</span> <span class="mi">1</span><span
+            class="p">:</span>
         <span class="n">text_background_color</span> <span class="o">=</span> <span class="s2">&quot;pink&quot;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">text_background_color</span> <span class="o">=</span> <span class="s2">&quot;white&quot;</span>
 
-    <span class="n">main_menu</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">[</span><span class="s2">&quot;Application&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;About&quot;</span><span class="p">,</span> <span class="s2">&quot;Preferences&quot;</span><span class="p">]]</span>
-    <span class="p">]</span>
-
     <span class="n">layout</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">[</span><span class="n">Qt</span><span class="o">.</span><span class="n">Menu</span><span class="p">(</span><span class="n">main_menu</span><span class="p">,</span> <span class="n">background_color</span><span class="o">=</span><span class="s2">&quot;#D3D1D3&quot;</span><span class="p">)],</span>
         <span class="p">[</span>
             <span class="n">Qt</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="s1">&#39;External IP:&#39;</span><span class="p">,</span> <span class="n">background_color</span><span class="o">=</span><span class="n">text_background_color</span><span class="p">,</span> <span class="n">text_color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">relief</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">RELIEF_GROOVE</span><span class="p">,</span>
                     <span class="n">size_px</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">auto_size_text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">justification</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">),</span>
@@ -519,12 +636,6 @@
                     <span class="n">text_color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">size_px</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">auto_size_text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">justification</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
         <span class="p">],</span>
         <span class="p">[</span>
-            <span class="n">Qt</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status&quot;</span><span class="p">,</span> <span class="n">background_color</span><span class="o">=</span><span class="n">text_background_color</span><span class="p">,</span> <span class="n">text_color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
-                    <span class="n">relief</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">RELIEF_GROOVE</span><span class="p">,</span> <span class="n">size_px</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">auto_size_text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">justification</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">),</span>
-            <span class="n">Qt</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="n">t_text</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;STATUS_OUT&quot;</span><span class="p">,</span> <span class="n">relief</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">RELIEF_SUNKEN</span><span class="p">,</span> <span class="n">background_color</span><span class="o">=</span><span class="n">text_background_color</span><span class="p">,</span>
-                    <span class="n">text_color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">size_px</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">auto_size_text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">justification</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
-        <span class="p">],</span>
-        <span class="p">[</span>
             <span class="n">Qt</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;MAIN_CLOSE_BUTTON&#39;</span><span class="p">,</span>
                       <span class="n">image_filename</span><span class="o">=</span><span class="n">app_quit_50x50_fp</span><span class="p">,</span>
                       <span class="n">image_size</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>
@@ -533,78 +644,83 @@
             <span class="n">Qt</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;MAIN_REFRESH_BUTTON&#39;</span><span class="p">,</span>
                       <span class="n">image_filename</span><span class="o">=</span><span class="n">app_refresh_50x50_fp</span><span class="p">,</span>
                       <span class="n">image_size</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>
-                      <span class="n">button_color</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;#ff0000&quot;</span><span class="p">),</span>
-                      <span class="n">tooltip</span><span class="o">=</span><span class="s2">&quot;Refresh&quot;</span><span class="p">)</span>
+                      <span class="n">button_color</span><span class="o">=</span><span class="p">(</span><span
+            class="kc">None</span><span class="p">,</span> <span class="s2">&quot;#ff0000&quot;</span><span
+            class="p">),</span>
+                      <span class="n">tooltip</span><span class="o">=</span><span
+            class="s2">&quot;Refresh&quot;</span><span class="p">)</span>
         <span class="p">],</span>
-
     <span class="p">]</span>
 
     <span class="c1"># Assemble the above widget into a window.</span>
-    <span class="n">window</span> <span class="o">=</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Window</span><span class="p">(</span><span class="s1">&#39;IP-Reveal by Inspyre Softworks&#39;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>
-                       <span class="n">background_image</span><span class="o">=</span><span class="n">NEON_DARK_FP</span><span class="p">,</span>
-                       <span class="n">icon</span><span class="o">=</span><span class="n">app_main_24x24</span><span class="p">,</span>
-                       <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span>
-                       <span class="n">alpha_channel</span><span class="o">=.</span><span class="mi">95</span><span class="p">,</span>
-                       <span class="n">grab_anywhere</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                       <span class="n">background_color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
-                       <span class="n">no_titlebar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                       <span class="n">return_keyboard_events</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                       <span class="n">keep_on_top</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="c1"># ToDO:</span>
-    <span class="c1">#     * Add a config window and associated config file.</span>
-    <span class="c1">#         * Include in config window the ability to make the window &quot;Always on top&quot;</span>
-
-    <span class="n">mute</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">mute_all</span>
-    <span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Muted: </span><span class="si">{</span><span class="n">mute</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">window</span> <span class="o">=</span> <span class="n">Qt</span><span class="o">.</span><span
+            class="n">Window</span><span class="p">(</span><span
+            class="s1">&#39;IP-Reveal by Inspyre Softworks&#39;</span><span class="p">,</span> <span
+            class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>
+                       <span class="n">background_image</span><span class="o">=</span><span
+            class="n">NEON_DARK_FP</span><span class="p">,</span>
+                       <span class="n">icon</span><span class="o">=</span><span class="n">app_main_24x24</span><span
+            class="p">,</span>
+                       <span class="n">size</span><span class="o">=</span><span class="p">(</span><span
+            class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span>
+                       <span class="n">alpha_channel</span><span class="o">=</span><span class="n">alpha</span><span
+            class="p">,</span>
+                       <span class="n">grab_anywhere</span><span class="o">=</span><span class="kc">True</span><span
+            class="p">,</span>
+                       <span class="n">background_color</span><span class="o">=</span><span
+            class="s2">&quot;white&quot;</span>
+                       <span class="p">)</span>
 
     <span class="c1"># Start our main GUI loop.</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">event</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">event</span><span class="p">,</span> <span class="n">values</span> <span
+            class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">read</span><span
+            class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">100</span><span
+            class="p">)</span>
 
         <span class="c1"># Set up a child logger that will log window events.</span>
-        <span class="n">w_log</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="n">log_name</span> <span class="o">+</span> <span class="s1">&#39;.MainWindow&#39;</span><span class="p">)</span>
-        <span class="n">w_debug</span> <span class="o">=</span> <span class="n">w_log</span><span class="o">.</span><span class="n">debug</span>
+        <span class="n">w_log</span> <span class="o">=</span> <span class="n">getLogger</span><span
+            class="p">(</span><span class="n">log_name</span> <span class="o">+</span> <span class="s1">&#39;.MainWindow&#39;</span><span
+            class="p">)</span>
+        <span class="n">w_debug</span> <span class="o">=</span> <span class="n">w_log</span><span
+            class="o">.</span><span class="n">debug</span>
 
         <span class="c1"># Increment the cycle count</span>
         <span class="n">acc</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">total_acc</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="n">t_text</span> <span class="o">=</span> <span class="n">timer</span><span class="o">.</span><span class="n">get_elapsed</span><span class="p">()</span>
+        <span class="n">t_text</span> <span class="o">=</span> <span class="n">timer</span><span class="o">.</span><span
+            class="n">get_elapsed</span><span class="p">()</span>
 
-        <span class="n">window</span><span class="p">[</span><span class="s1">&#39;TIME_SINCE_Q_OUT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">timer</span><span class="o">.</span><span class="n">get_elapsed</span><span class="p">())</span>
+        <span class="n">window</span><span class="p">[</span><span class="s1">&#39;TIME_SINCE_Q_OUT&#39;</span><span
+            class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span
+            class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t_text</span><span
+            class="si">}</span><span class="s2"> ago...&quot;</span><span class="p">)</span>
 
-        <span class="n">ref_acc</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># If the accumulator is at 325 counts, alert the user, update the window, and reset the accumulator</span>
+        <span class="k">if</span> <span class="n">acc</span> <span class="o">==</span> <span class="mi">325</span><span
+            class="p">:</span>
+            <span class="n">w_debug</span><span class="p">(</span><span class="s1">&#39;Calling function to update the window...&#39;</span><span
+            class="p">)</span>
 
-        <span class="k">if</span> <span class="n">refreshing</span><span class="p">:</span>
-            <span class="n">ref_acc</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="n">ref_acc</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
-                <span class="n">ref_acc</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">window</span><span class="p">[</span><span class="s1">&#39;TIME_SINCE_Q_OUT&#39;</span><span
+            class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span
+            class="s1">&#39;Refreshing...&#39;</span><span class="p">)</span>
+            <span class="n">update_win</span> <span class="o">=</span> <span class="n">Thread</span><span
+            class="p">(</span><span class="n">target</span><span class="o">=</span><span
+            class="n">update_window</span><span class="p">)</span>
 
-            <span class="n">dots</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span> <span class="o">*</span> <span class="n">ref_acc</span>
-
-            <span class="n">window</span><span class="p">[</span><span class="s1">&#39;STATUS_OUT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Refreshing</span><span class="si">{</span><span class="n">dots</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">text_color</span><span class="o">=</span><span class="s1">&#39;yellow&#39;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">offline</span><span class="p">:</span>
-                <span class="n">window</span><span class="p">[</span><span class="s1">&#39;STATUS_OUT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;Online&quot;</span><span class="p">,</span> <span class="n">text_color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">window</span><span class="p">[</span><span class="s1">&#39;STATUS_OUT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;Offline&quot;</span><span class="p">,</span> <span class="n">text_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
-
-        <span class="c1"># If the accumulator is at 325 counts, alert the user, version the window, and reset the accumulator</span>
-        <span class="k">if</span> <span class="n">acc</span> <span class="o">==</span> <span class="mi">325</span><span class="p">:</span>
-            <span class="n">w_debug</span><span class="p">(</span><span class="s1">&#39;Calling function to version the window...&#39;</span><span class="p">)</span>
-            <span class="n">refreshing</span> <span class="o">=</span> <span class="kc">True</span>
-
-            <span class="n">window</span><span class="p">[</span><span class="s1">&#39;TIME_SINCE_Q_OUT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s1">&#39;Refreshing...&#39;</span><span class="p">)</span>
-            <span class="n">update_win</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">update_window</span><span class="p">)</span>
-
-            <span class="n">update_win</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-            <span class="n">w_debug</span><span class="p">(</span><span class="s1">&#39;Updated window!&#39;</span><span class="p">)</span>
-            <span class="n">refreshing</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">update_win</span><span class="o">.</span><span class="n">start</span><span
+            class="p">()</span>
+            <span class="n">w_debug</span><span class="p">(</span><span class="s1">&#39;Updated window!&#39;</span><span
+            class="p">)</span>
 
         <span class="c1"># If the &#39;Close&#39; button is pressed: we exit.</span>
-        <span class="k">if</span> <span class="n">event</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;MAIN_CLOSE_BUTTON&#39;</span><span class="p">:</span>
-            <span class="n">e_reason</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;It seems the user closed the window, received </span><span class="si">{</span><span class="n">values</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">event</span> <span class="ow">is</span> <span
+            class="kc">None</span> <span class="ow">or</span> <span class="n">event</span> <span
+            class="o">==</span> <span class="s1">&#39;MAIN_CLOSE_BUTTON&#39;</span><span class="p">:</span>
+            <span class="n">e_reason</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;It seems the user closed the window, received </span><span
+            class="si">{</span><span class="n">values</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;MAIN_CLOSE_BUTTON&#39;</span><span class="p">:</span>
                 <span class="n">e_reason</span> <span class="o">=</span> <span class="s1">&#39;The close button was pressed&#39;</span>
             <span class="n">safe_exit</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="n">exit_reason</span><span class="o">=</span><span class="n">e_reason</span><span class="p">)</span>
