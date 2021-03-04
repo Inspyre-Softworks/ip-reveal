@@ -15,8 +15,8 @@ from threading import Thread
 from ip_reveal.assets.ui_elements.backgrounds import NEON_DARK_FP
 
 from ip_reveal.assets.ui_elements.icons import app_main_24x24, \
-                                               app_quit_50x50_fp, \
-                                               app_refresh_50x50_fp
+    app_quit_50x50_fp, \
+    app_refresh_50x50_fp
 
 from ip_reveal.tools.arguments import Reader
 
@@ -57,8 +57,8 @@ total_acc = 0
 window = None
 
 # Set up two variables that will act as caches for the external and internal IPs
-cached_ext_ip = None
 cached_int_ip = None
+cached_ext_ip = None
 
 t_text = None
 refreshing = None
@@ -68,6 +68,7 @@ mute = None
 
 # Set up a global variable to keep track of if offline or not
 offline = None
+
 
 def get_hostname():
     """
@@ -108,7 +109,8 @@ def get_external():
 
     # Try contacting IPIFY.org with a basic request and read the returned text.
     #
-    # If we are unable to connect to this outside service, it's likely that Internet connection has dropped. There are - however, instances where this service is down,
+    # If we are unable to connect to this outside service, it's likely that Internet connection has dropped. There
+    # are - however, instances where this service is down,
     # and for these reasons we want to have at least one alternative to control for failure on a Singular -free- AI API.
 
     # Fetch the external IP-Address from IPIFY.org
@@ -126,7 +128,7 @@ def get_external():
         external = None
 
     if external is not None:
-
+    
         if not cached_ext_ip:
             cached_ext_ip = external
             if not cached_ext_ip == external:
@@ -295,6 +297,7 @@ def main():
 
     # Set up the logging device
     log_device = InspyLogger().LogDevice(log_name, args.log_level)
+    log_level = args.log_level
 
     # Start the logging device
     log = log_device.start()
@@ -348,56 +351,63 @@ def main():
         text_background_color = "white"
 
     main_menu = [
-        ["Application", ["About", "Preferences"]]
-    ]
+            ["Application", ["About", "Preferences"]]
+            ]
 
     layout = [
-        [Qt.Menu(main_menu, background_color="#D3D1D3")],
-        [
-            Qt.Text('External IP:', background_color=text_background_color, text_color="black", relief=Qt.RELIEF_GROOVE,
-                    size_px=size, auto_size_text=True, justification='center'),
-            Qt.Text(get_external(), relief=Qt.RELIEF_SUNKEN, key='EXTIP_OUT', background_color=text_background_color,
-                    text_color="black", size_px=size, auto_size_text=True, justification='center'),
-        ],
-
-        [
-            Qt.Text('Internal IP:', background_color=text_background_color, text_color="black", relief=Qt.RELIEF_GROOVE,
-                    size_px=size, auto_size_text=True, justification='center'),
-            Qt.Text(get_internal(), key='INTIP_OUT', relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
-                    text_color="black", size_px=size, auto_size_text=True, justification='center')
-        ],
-        [
-            Qt.Text('Hostname:', background_color=text_background_color, text_color="black", relief=Qt.RELIEF_GROOVE,
-                    size_px=size, auto_size_text=True, justification='center'),
-            Qt.Text(get_hostname(), key='HOSTNAME_OUT', relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
-                    text_color="black", size_px=size, auto_size_text=True, justification='center')
-        ],
-        [
-            Qt.Text(f"Last checked", background_color=text_background_color, text_color="black",
-                    relief=Qt.RELIEF_GROOVE, size_px=size, auto_size_text=True, justification='center'),
-            Qt.Text(t_text, key="TIME_SINCE_Q_OUT", relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
-                    text_color="black", size_px=size, auto_size_text=True, justification='center')
-        ],
-        [
-            Qt.Text(f"Status", background_color=text_background_color, text_color="black",
-                    relief=Qt.RELIEF_GROOVE, size_px=size, auto_size_text=True, justification='center'),
-            Qt.Text(t_text, key="STATUS_OUT", relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
-                    text_color="black", size_px=size, auto_size_text=True, justification='center')
-        ],
-        [
-            Qt.Button('', key='MAIN_CLOSE_BUTTON',
-                      image_filename=app_quit_50x50_fp,
-                      image_size=(50, 50),
-                      button_color=(None, "#ff0000"),
-                      tooltip="Quit IP Reveal"),
-            Qt.Button('', key='MAIN_REFRESH_BUTTON',
-                      image_filename=app_refresh_50x50_fp,
-                      image_size=(50, 50),
-                      button_color=(None, "#ff0000"),
-                      tooltip="Refresh")
-        ],
-
-    ]
+            [Qt.Menu(main_menu, background_color="#D3D1D3")],
+            [
+                    Qt.Text('External IP:', background_color=text_background_color, text_color="black",
+                            relief=Qt.RELIEF_GROOVE,
+                            size_px=size, auto_size_text=True, justification='center'),
+                    Qt.Text(get_external(), relief=Qt.RELIEF_SUNKEN, key='EXTIP_OUT',
+                            background_color=text_background_color,
+                            text_color="black", size_px=size, auto_size_text=True, justification='center'),
+                    ],
+        
+            [
+                    Qt.Text('Internal IP:', background_color=text_background_color, text_color="black",
+                            relief=Qt.RELIEF_GROOVE,
+                            size_px=size, auto_size_text=True, justification='center'),
+                    Qt.Text(get_internal(), key='INTIP_OUT', relief=Qt.RELIEF_SUNKEN,
+                            background_color=text_background_color,
+                            text_color="black", size_px=size, auto_size_text=True, justification='center')
+                    ],
+            [
+                    Qt.Text('Hostname:', background_color=text_background_color, text_color="black",
+                            relief=Qt.RELIEF_GROOVE,
+                            size_px=size, auto_size_text=True, justification='center'),
+                    Qt.Text(get_hostname(), key='HOSTNAME_OUT', relief=Qt.RELIEF_SUNKEN,
+                            background_color=text_background_color,
+                            text_color="black", size_px=size, auto_size_text=True, justification='center')
+                    ],
+            [
+                    Qt.Text(f"Last checked", background_color=text_background_color, text_color="black",
+                            relief=Qt.RELIEF_GROOVE, size_px=size, auto_size_text=True, justification='center'),
+                    Qt.Text(t_text, key="TIME_SINCE_Q_OUT", relief=Qt.RELIEF_SUNKEN,
+                            background_color=text_background_color,
+                            text_color="black", size_px=size, auto_size_text=True, justification='center')
+                    ],
+            [
+                    Qt.Text(f"Status", background_color=text_background_color, text_color="black",
+                            relief=Qt.RELIEF_GROOVE, size_px=size, auto_size_text=True, justification='center'),
+                    Qt.Text(t_text, key="STATUS_OUT", relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
+                            text_color="black", size_px=size, auto_size_text=True, justification='center')
+                    ],
+            [
+                    Qt.Button('', key='MAIN_CLOSE_BUTTON',
+                              image_filename=app_quit_50x50_fp,
+                              image_size=(50, 50),
+                              button_color=(None, "#ff0000"),
+                              tooltip="Quit IP Reveal"),
+                    Qt.Button('', key='MAIN_REFRESH_BUTTON',
+                              image_filename=app_refresh_50x50_fp,
+                              image_size=(50, 50),
+                              button_color=(None, "#ff0000"),
+                              tooltip="Refresh")
+                    ],
+        
+            ]
 
     # Assemble the above widget into a window.
     window = Qt.Window('IP-Reveal by Inspyre Softworks', layout=layout,
@@ -454,13 +464,17 @@ def main():
         if acc == 325:
             w_debug('Calling function to version the window...')
             refreshing = True
-
+    
             window['TIME_SINCE_Q_OUT'].update('Refreshing...')
             update_win = Thread(target=update_window)
-
+    
             update_win.start()
             w_debug('Updated window!')
             refreshing = False
+
+        if args.log_level.lower() == 'debug':
+            if 'timeout' not in event.lower():
+                w_debug(f"Event occurred! | Event: {event}")
 
         # If the 'Close' button is pressed: we exit.
         if event is None or event == 'MAIN_CLOSE_BUTTON':
@@ -468,12 +482,15 @@ def main():
             if event == 'MAIN_CLOSE_BUTTON':
                 e_reason = 'The close button was pressed'
             safe_exit(window, exit_reason=e_reason)
-
+    
             w_log.info("User initiated closing")
-
+    
             break
 
         if event == 'MAIN_REFRESH_BUTTON':
             w_debug('Calling a refresh on the window')
             update_window()
             w_debug('All seems well!')
+
+        if event == 'Preferences':
+            print("User clicked on 'Preferences' entry in menu!")
