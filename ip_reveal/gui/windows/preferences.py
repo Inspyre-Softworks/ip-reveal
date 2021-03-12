@@ -1,11 +1,17 @@
 import PySimpleGUIQt as gui
 
 
-class PreferencesWindow(object):
+class Window(object):
+    
+    def __layout__(self):
+        _ = [
+                [gui.Text("Refresh interval: "), ]
+                ]
+    
     def __init__(self):
         """
 
         .. versionadded:: 1.0.1
 
         """
-        pass
+        self.active = False

@@ -3,15 +3,27 @@ import PySimpleGUI as Gui
 from threading import Thread
 from ip_reveal.assets.ui_elements.icons import tp_github
 from ip_reveal.assets.ui_elements.icons.alerts import icons_alert_shield
-from ip_reveal.assets.sounds import Alerts
+
+try:
+    import simpleaudio
+except ModuleNotFoundError as e:
+    print("No audio package found!")
+    audio_avail = False
+else:
+    from ip_reveal.assets.sounds import Alerts
+    
+    audio_avail = True
 
 from .errors import InvalidProjInfoRequestError
 
-
 GUI = Gui
 
-bell = Alerts()
-mute = None
+if audio_avail:
+    bell = Alerts()
+    mute = False
+else:
+    bell = None
+    mute = True
 
 
 def notify(msg, duration=7000, alpha=.8, location=(750, 450), icon=icons_alert_shield):
