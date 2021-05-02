@@ -5,7 +5,16 @@ from platform import node
 from socket import gaierror
 from urllib.error import URLError
 
-import PySimpleGUIQt as Qt
+try:
+    import PySimpleGUIQt as Qt
+except ImportError:
+    try:
+        shell = get_ipython().__class__.__name__
+        Qt = pyqt5
+    except:
+        raise
+
+
 from inspy_logger import LEVELS as LOG_LEVELS, getLogger
 from inspy_logger import InspyLogger
 from inspyred_print import Color, Format
@@ -292,6 +301,9 @@ def main():
                         required=False,
                         help="Starts the program with all program audio muted.",
                         default=False
+                        )
+
+    parser.add_argument('-V', '--version', action='version', version='1.2'
                         )
 
     sub_parsers = parser.add_subparsers(

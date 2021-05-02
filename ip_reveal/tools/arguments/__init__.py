@@ -1,6 +1,10 @@
 from argparse import ArgumentParser
 
 
+def super():
+    pass
+
+
 class ArgParser(ArgumentParser):
 
     def __init__(self):
@@ -9,10 +13,7 @@ class ArgParser(ArgumentParser):
         Instantiate an argument parser.
 
         """
-        super().__init__()
-
-        self.add_argument("-v", "--verbose", required=False, action="store_true", default=False,
-                          help="Use this option if you'd like the most output from the program into the console you "
+        super().__init__(help="Use this option if you'd like the most output from the program into the console you "
                                "can get")
 
         self.add_argument("--no-alerts", required=False, action='store_true', default=False,

@@ -1,0 +1,28 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+certifi = "==2020.12.5"
+chardet = "==4.0.0"
+colorama = "==0.4.4"
+colorlog = "==4.6.2"
+humanize = "~=3.2.0"
+idna = "==2.10"
+inspy-logger = "==2.0.0a6"
+insPyred-print = "==1.0"
+luddite = "==1.0.1"
+pyparsing = "==2.4.7"
+PySide2 = "==5.13.2"
+PySimpleGUI = "~=4.32.1"
+PySimpleGUIQt = "~=0.35.0"
+requests = "~=2.25.1"
+setuptools-autover = "==1.0.2"
+shiboken2 = "==5.13.2"
+urllib3 = "~=1.26.2"
+
+[dev-packages]
+
+[requires]
+python_version = "2.7"

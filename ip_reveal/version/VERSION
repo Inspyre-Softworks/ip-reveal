@@ -1,0 +1,23 @@
+from collections import UserDict
+
+
+class VERSION(UserDict):
+
+    VERSION = UserDict({
+                   'VERSION': {
+                       'base': 1.1.0,
+                       'cname': 'greentail',
+                   },
+
+                   'RELEASE': {
+
+                       'non-stable': True,
+                   },
+
+                   'PRE_RELEASE': {
+                       'stage': 'alpha',
+                       'build': 2
+                   }
+    })
+
+print(VERSION.data)
