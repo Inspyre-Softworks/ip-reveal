@@ -8,10 +8,7 @@ from ip_reveal.config import args
 GUI = Gui
 
 
-if args.mute_all:
-    bell = Null()
-else:
-    bell = Alerts()
+bell = Null() if args.mute_all else Alerts()
 
 
 def notify(msg, duration=7000, alpha=.8, location=(750, 450), icon=icons_alert_shield):

@@ -37,9 +37,6 @@ def run():
     # Instantiate our argument parser
     parser = ArgParser()
 
-    # Parse the arguments that were received on session start
-    args = parser.parse_args()
-
-    return args
+    return parser.parse_args()
 
 run()

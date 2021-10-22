@@ -31,24 +31,20 @@ class Window(object):
         vals_last_save = None
         while self.running:
             event, values = self.win.read(100)
-            
+
             if vals_last_save is None:
                 vals_last_save = values
-                
+
             vals_differ = (vals_last_save != values)
-            
-            if vals_differ:
-                save_button_color = 'green'
-            else:
-                save_button_color = 'red'
-            
+
+            save_button_color = 'green' if vals_differ else 'red'
             self.win['SAVE_BUTTON'].update(disabled=not vals_differ, button_color=('black', save_button_color))
-            
+
             cbox_now = values['SECURE_KILL_CHECK']
-            
+
             self.win['SECURE_KILL_PROG_LABEL'].update(visible=cbox_now)
             self.win['SECURE_KILL_PROG'].update(visible=cbox_now)
-            
+
             if event is None:
                 self.running = False
                 self.win.close()

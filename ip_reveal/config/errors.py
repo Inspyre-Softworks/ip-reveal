@@ -18,12 +18,8 @@ class NoStoredConfigError(Exception):
             no_print(bool): Do not do any printing on initialization, let the caller handle it.
         """
         msg = "Was unable to find a valid config file, nor was I able to find a valid flag file in this location"
-        if message is not None:
-            self.message = msg + f' {message}'
-        else:
-            self.message = msg
-            
+        self.message = msg + f' {message}' if message is not None else msg
         self.msg = self.message
-        
+
         if not no_print:
             print()
