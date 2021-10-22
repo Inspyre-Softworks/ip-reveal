@@ -135,16 +135,14 @@ def get_external():
             inet_down = True
         external = None
 
-    if external is not None:
-
-        if not cached_ext_ip:
-            cached_ext_ip = external
-            if not cached_ext_ip == external:
-                push_notification(cached_ext_ip, external)
-                cached_ext_ip = external
-
-    else:
+    if external is None:
         return False
+
+    if not cached_ext_ip:
+        cached_ext_ip = external
+        if cached_ext_ip != external:
+            push_notification(cached_ext_ip, external)
+            cached_ext_ip = external
 
     if len(ip_hist) == 0:
         _debug("Added first IP to history list.")
@@ -226,14 +224,11 @@ def update_window(values=None):
     # If set to do so; spit out some debug data
     u_debug = _log.debug
     u_debug('TIMEOUT - Refreshing window...')
-    u_debug(f'acc = {str(acc)}')
-
-    # Reset the frame accumulator
-    acc = 0
+    u_debug(f'acc = {acc}')
 
     # Spit out some more useful info, if allowed.
-    u_debug(f'Reset acc accumulator new value: {str(acc)}')
-    u_debug(f'Incrementing refresh count...')
+    u_debug(f'Reset acc accumulator new value: 0')
+    u_debug('Incrementing refresh count...')
 
     # For stats purposes only; increment our count of window refreshes.
     refresh_num += 1
@@ -251,11 +246,7 @@ def update_window(values=None):
     # routine to always track the time since last data fetching
     timer.reset()
 
-    if ip == "Offline":
-        t_color = "red"
-    else:
-        t_color = "green"
-
+    t_color = "red" if ip == "Offline" else "green"
     # Update the relevant fields with our fresh data
     window['EXTIP_OUT'].update(ip, text_color=t_color)
     window['INTIP_OUT'].update(local_ip)
@@ -266,7 +257,7 @@ def update_window(values=None):
     u_debug(f'Updated window with new values: {values}')
     u_debug(f'This was refresh number {refresh_num}')
 
-    if not ip == cached_ext_ip:
+    if ip != cached_ext_ip:
         ip_change_notify(cached_ext_ip, ip, args.mute_all)
         cached_ext_ip = ip
         ip_hist.append(ip)
@@ -336,7 +327,7 @@ def main():
                         help="Starts the program with all program audio muted.",
                         default=False
                         )
-    
+
     # Argument to implicitly set the refresh rate
     parser.add_argument('-r', '--refresh-interval',
                         type=int,
@@ -372,7 +363,7 @@ def main():
                                   default=False)
 
     args = parser.parse_args()
-    
+
     config.args = args
 
     # Set up the logging device
@@ -410,50 +401,112 @@ def main():
     bg_color = "340245"
     size = (220, 50)
     alpha = 1
-    if alpha >= 1:
-        text_background_color = "pink"
-    else:
-        text_background_color = "white"
-
+    text_background_color = "pink" if alpha >= 1 else "white"
     layout = [
         [
-            Qt.Text('External IP:', background_color=text_background_color, text_color="black", relief=Qt.RELIEF_GROOVE,
-                    size_px=size, auto_size_text=True, justification='center'),
-            Qt.Text(get_external(), relief=Qt.RELIEF_SUNKEN, key='EXTIP_OUT', background_color=text_background_color,
-                    text_color="black", size_px=size, auto_size_text=True, justification='center'),
-        ],
-
-        [
-            Qt.Text('Internal IP:', background_color=text_background_color, text_color="black", relief=Qt.RELIEF_GROOVE,
-                    size_px=size, auto_size_text=True, justification='center'),
-            Qt.Text(get_internal(), key='INTIP_OUT', relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
-                    text_color="black", size_px=size, auto_size_text=True, justification='center')
-        ],
-        [
-            Qt.Text('Hostname:', background_color=text_background_color, text_color="black", relief=Qt.RELIEF_GROOVE,
-                    size_px=size, auto_size_text=True, justification='center'),
-            Qt.Text(get_hostname(), key='HOSTNAME_OUT', relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
-                    text_color="black", size_px=size, auto_size_text=True, justification='center')
-        ],
-        [
-            Qt.Text(f"Last checked", background_color=text_background_color, text_color="black",
-                    relief=Qt.RELIEF_GROOVE, size_px=size, auto_size_text=True, justification='center'),
-            Qt.Text(t_text, key="TIME_SINCE_Q_OUT", relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
-                    text_color="black", size_px=size, auto_size_text=True, justification='center')
+            Qt.Text(
+                'External IP:',
+                background_color=text_background_color,
+                text_color="black",
+                relief=Qt.RELIEF_GROOVE,
+                size_px=size,
+                auto_size_text=True,
+                justification='center',
+            ),
+            Qt.Text(
+                get_external(),
+                relief=Qt.RELIEF_SUNKEN,
+                key='EXTIP_OUT',
+                background_color=text_background_color,
+                text_color="black",
+                size_px=size,
+                auto_size_text=True,
+                justification='center',
+            ),
         ],
         [
-            Qt.Button('', key='MAIN_CLOSE_BUTTON',
-                      image_filename=app_quit_50x50_fp,
-                      image_size=(50, 50),
-                      button_color=(None, "#ff0000"),
-                      tooltip="Quit IP Reveal"),
-            Qt.Button('', key='MAIN_REFRESH_BUTTON',
-                      image_filename=app_refresh_50x50_fp,
-                      image_size=(50, 50),
-                      button_color=(None, "#ff0000"),
-                      tooltip="Refresh")
+            Qt.Text(
+                'Internal IP:',
+                background_color=text_background_color,
+                text_color="black",
+                relief=Qt.RELIEF_GROOVE,
+                size_px=size,
+                auto_size_text=True,
+                justification='center',
+            ),
+            Qt.Text(
+                get_internal(),
+                key='INTIP_OUT',
+                relief=Qt.RELIEF_SUNKEN,
+                background_color=text_background_color,
+                text_color="black",
+                size_px=size,
+                auto_size_text=True,
+                justification='center',
+            ),
+        ],
+        [
+            Qt.Text(
+                'Hostname:',
+                background_color=text_background_color,
+                text_color="black",
+                relief=Qt.RELIEF_GROOVE,
+                size_px=size,
+                auto_size_text=True,
+                justification='center',
+            ),
+            Qt.Text(
+                get_hostname(),
+                key='HOSTNAME_OUT',
+                relief=Qt.RELIEF_SUNKEN,
+                background_color=text_background_color,
+                text_color="black",
+                size_px=size,
+                auto_size_text=True,
+                justification='center',
+            ),
+        ],
+        [
+            Qt.Text(
+                'Last checked',
+                background_color=text_background_color,
+                text_color="black",
+                relief=Qt.RELIEF_GROOVE,
+                size_px=size,
+                auto_size_text=True,
+                justification='center',
+            ),
+            Qt.Text(
+                t_text,
+                key="TIME_SINCE_Q_OUT",
+                relief=Qt.RELIEF_SUNKEN,
+                background_color=text_background_color,
+                text_color="black",
+                size_px=size,
+                auto_size_text=True,
+                justification='center',
+            ),
+        ],
+        [
+            Qt.Button(
+                '',
+                key='MAIN_CLOSE_BUTTON',
+                image_filename=app_quit_50x50_fp,
+                image_size=(50, 50),
+                button_color=(None, "#ff0000"),
+                tooltip="Quit IP Reveal",
+            ),
+            Qt.Button(
+                '',
+                key='MAIN_REFRESH_BUTTON',
+                image_filename=app_refresh_50x50_fp,
+                image_size=(50, 50),
+                button_color=(None, "#ff0000"),
+                tooltip="Refresh",
+            ),
         ],
     ]
+
 
     # Assemble the above widget into a window.
     window = Qt.Window('IP-Reveal by Inspyre Softworks', layout=layout,
@@ -464,7 +517,7 @@ def main():
                        grab_anywhere=True,
                        background_color="white"
                        )
-    
+
 
     # Start our main GUI loop.
     while True:
