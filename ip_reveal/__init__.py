@@ -227,7 +227,7 @@ def update_window(values=None):
     u_debug(f'acc = {acc}')
 
     # Spit out some more useful info, if allowed.
-    u_debug(f'Reset acc accumulator new value: 0')
+    u_debug('Reset acc accumulator new value: 0')
     u_debug('Incrementing refresh count...')
 
     # For stats purposes only; increment our count of window refreshes.
