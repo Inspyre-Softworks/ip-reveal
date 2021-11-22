@@ -1,7 +1,21 @@
 # ip-reveal
 
+> #### Note:
+> If you're using Linux you may need to install some dependencies in order to get the install from pip to work. 
+> 
+> The dependencies are:
+> * python3-dev
+> * libasound2-dev
+>
+> If you are using Ubuntu you can install these packages from your distro's repositories by issuing the following command:
+> ```shell
+> $> sudo apt-get install -y python3-dev libasound2-dev
+
+```
+
 1) `$> pip install ip-reveal`
 2) `$> ip-reveal`
+
 
 ## Sub-Commands:
 
