@@ -1,0 +1,33 @@
+## Changes v1.1 ~> v1.2:
+
+### Notable File Changes:
+- ip_reveal/__init__.py:
+  - Moved importing 'ip_reveal.popups.ip_change_notify' to new function named 'push_notification' so it'll only be
+  loaded if the program is fully loaded and a notification is needed.
+  - Added subcommand:
+      - test-audio:
+          - Description:
+
+                Runs a test or a whole range of tests on IP-Reveal's audio engine 'simpleaudio'.
+
+                test-audio has the following options:
+
+                    - '-f' or '--full':
+                        Run the entire range of tests offered by 'simpleaudio'.
+
+                    - '-c' or '--countdown':
+                        Specify the number from which to countdown before running each test.
+
+### Notable Usage Changes:
+#### Added Commands
+- test-audio
+
+
+### Dependancy Changes:
+- Added pypattyrn for the Null object functionality.
+
+- Upgrade inspy-logger 2.0.0a4 -> 2.1a14
+
+
+### General Improvements
+- You can now set the refresh interval (in seconds) by passing the '-r' or '--refresh-interval' argument on launch.

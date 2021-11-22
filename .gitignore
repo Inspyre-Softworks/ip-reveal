@@ -1,0 +1,5 @@
+/.spyproject/*
+*.lock
+/.idea/*
+*.gz
+*.whl
