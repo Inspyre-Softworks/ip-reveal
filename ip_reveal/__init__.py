@@ -5,8 +5,6 @@ from socket import gaierror
 from urllib.error import URLError
 from ip_reveal.config import PARSED_ARGS, CMD_ALIASES, LOG_DEVICE
 
-
-
 from inspy_logger import LEVELS as LOG_LEVELS, getLogger
 from inspy_logger import InspyLogger
 from inspyred_print import Color, Format
@@ -57,7 +55,7 @@ args = config.args
 config = config.CONFIG
 
 
-def get_hostname() :
+def get_hostname():
     """
     get_hostname
 
@@ -66,20 +64,20 @@ def get_hostname() :
     Returns:
         str: The system's apparent hostname contained within a string.
     """
-    
+
     # Prepare the logger
-    _log = getLogger(log_name + '.get_hostname')
+    _log = getLogger(f'{log_name}.get_hostname')
     _debug = _log.debug
-    
+
     # Fetch the hostname from platform.node
     hostname = node()
     _debug(f'Checked hostname and found it is: {hostname}')
-    
+
     # Return this to the caller
     return hostname
 
 
-def push_notification(old_ip, new_ip) :
+def push_notification(old_ip, new_ip):
     """
     
     Push a notification through the GUI with a sound.
@@ -98,11 +96,11 @@ def push_notification(old_ip, new_ip) :
 
     """
     from ip_reveal.popups import ip_change_notify
-    
+
     ip_change_notify(old_ip, new_ip)
 
 
-def get_external() :
+def get_external():
     """
     get_external
 
@@ -112,52 +110,50 @@ def get_external() :
         str: The system's apparent external IP-Address in the form of a string.
     """
     global cached_ext_ip, inet_down, ip_hist
-    
+
     # Prepare the logger
-    _log = getLogger(log_name + '.get_external')
+    _log = getLogger(f'{log_name}.get_external')
     _debug = _log.debug
-    
+
     # Try contacting IPIFY.org with a basic request and read the returned text.
     #
     # If we are unable to connect to this outside service, it's likely that Internet connection has dropped. There
     # are - however, instances where this service is down, and for these reasons we want to have at least one
     # alternative to control for failure on a Singular -free- AI API.
-    
+
     # Fetch the external IP-Address from IPIFY.org
-    try :
+    try:
         external = get('https://api.ipify.org').text
         _debug(f'Checked external IP and found it is: {external}')
-    
+
     # Catch the "ConnectionError" exception that is raised when the "requests" package is unable to reach
     # "IPIFY.org", simply reporting this occurred (if the logger is listening) before (maybe first; attempt connection
     # to another service?)
-    except (ConnectionError, MaxRetryError, gaierror, URLError) as e :
-        if not inet_down :
+    except (ConnectionError, MaxRetryError, gaierror, URLError) as e:
+        if not inet_down:
             _log.warning("Unable to establish an internet connection.")
             inet_down = True
         external = None
-    
-    if external is not None :
-        
-        if not cached_ext_ip :
-            cached_ext_ip = external
-            if not cached_ext_ip == external :
-                push_notification(cached_ext_ip, external)
-                cached_ext_ip = external
-    
-    else :
+
+    if external is None:
         return False
-    
-    if len(ip_hist) == 0 :
+
+    if not cached_ext_ip:
+        cached_ext_ip = external
+        if cached_ext_ip != external:
+            push_notification(cached_ext_ip, external)
+            cached_ext_ip = external
+
+    if len(ip_hist) == 0:
         _debug("Added first IP to history list.")
         ip_hist.append(external)
         _debug(f"IP History: {ip_hist}")
-    
+
     # Return the text result we get from the API to the caller.
     return external
 
 
-def get_internal() :
+def get_internal():
     """
     get_internal
 
@@ -166,40 +162,40 @@ def get_internal() :
     Returns:
         str: The system's local IP-Address contained within a string.
     """
-    
+
     # Set up a logger
-    _log = getLogger(log_name + '.get_internal')
-    
+    _log = getLogger(f'{log_name}.get_internal')
+
     # Alias the debug entry call
     _debug = _log.debug
-    
+
     # Start a socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    
+
     # Attempt a connection to an arbitrary host
-    try :
+    try:
         # doesn't even have to be reachable
         s.connect(('10.255.255.255', 1))
-        
+
         # Fetch our IP from this socket's metadata
         IP = s.getsockname()[0]
-    
+
     # Should we raise an exception we won't bother handling it, we'll just return the loopback address to the caller.
-    except Exception :
+    except Exception:
         IP = '127.0.0.1'
-    
+
     # No matter the result, let's remember to close the socket.
-    finally :
+    finally:
         s.close()
-    
+
     # Announce that we've found an IP
     _debug(f'Checked internal IP and found: {IP}')
-    
+
     # Return a string containing the result to the caller.
     return IP
 
 
-def update_window(values=None) :
+def update_window(values=None):
     global log_device, args
     from ip_reveal.popups import ip_change_notify
     """
@@ -221,74 +217,72 @@ def update_window(values=None) :
 
     """
     global acc, refresh_num, timer, cached_ext_ip, ip_hist
-    
+
     # Start the logger for this operation
-    _log = getLogger(log_name + '.update_window')
-    
+    _log = getLogger(f'{log_name}.update_window')
+
     # If set to do so; spit out some debug data
     u_debug = _log.debug
     u_debug('TIMEOUT - Refreshing window...')
     u_debug(f'acc = {str(acc)}')
-    
+
     # Reset the frame accumulator
     acc = 0
-    
+
     # Spit out some more useful info, if allowed.
-    u_debug(f'Reset acc accumulator new value: {str(acc)}')
-    u_debug(f'Incrementing refresh count...')
-    
+    u_debug(f'Reset acc accumulator new value: {acc}')
+    u_debug('Incrementing refresh count...')
+
     # For stats purposes only; increment our count of window refreshes.
     refresh_num += 1
-    
+
     # Grab our fresh data for diplaying to the window
     ip = get_external()
-    
-    if not ip :
+
+    if not ip:
         ip = "Offline"
-    
+
     local_ip = get_internal()
     hostname = get_hostname()
-    
+
     # Call a 'refresh()' on our timer object. This will start another cycle to keep track of. This allows the timer
     # routine to always track the time since last data fetching
-    timer.reset()
-    
-    if ip == "Offline" :
-        t_color = "red"
-    else :
-        t_color = "green"
-    
+    #timer.reset()
+    timer = Timer()
+    timer.start()
+
+    t_color = "red" if ip == "Offline" else "green"
     # Update the relevant fields with our fresh data
     window['PUBLIC_OUT'].update(ip, text_color=t_color)
     window['LOCAL_OUT'].update(local_ip)
     window['HOSTNAME_OUT'].update(hostname)
     window['TIME_SINCE_Q_OUT'].update("Just now...")
-    
+
     # Make some notes in the debug log that might be useful
     u_debug(f'Updated window with new values: {values}')
     u_debug(f'This was refresh number {refresh_num}')
-    
-    if not ip == cached_ext_ip :
+
+    if ip != cached_ext_ip:
         ip_change_notify(cached_ext_ip, ip, args.mute_all)
         cached_ext_ip = ip
         ip_hist.append(ip)
 
 
-def safe_exit(win, exit_reason) :
-    _log = getLogger(log_name + '.safe_exit')
-    
+def safe_exit(win, exit_reason):
+    _log = getLogger(f'{log_name}.safe_exit')
+
     tmp_hist = []
-    for ip in ip_hist :
-        if ip not in tmp_hist :
+    for ip in ip_hist:
+        if ip not in tmp_hist:
             tmp_hist.append(ip)
-    
+
     _log.info(f"During operation you switched IP addresses {len(ip_hist) - 1} times.")
     _log.info(f"Held IP addresses: {tmp_hist}")
     _log.info(f"Exiting safely. Reason: {exit_reason}")
     _log.info(f"The IP address was refreshed {refresh_num} times")
     _log.info(f"Window underwent {total_acc} cycles")
     print(timer.start_time)
-    
+
     win.close()
     sys.exit()
 
@@ -315,7 +309,7 @@ cached_int_ip = None
 acc2 = 0
 
 
-def main() :
+def main():
     """
     
     This is the main function to run the IP-Reveal program
@@ -324,17 +318,19 @@ def main() :
         None
 
     """
-    global total_acc, acc, refresh_num, window, log_device, args
-    
+    global total_acc, acc, refresh_num, window, log_device, argsNew
+    from ip_reveal.popups import ip_change_notify
+
+
     # Timer text
     t_text = "Just now..."
-    
+
     # Qt.theme('DarkBlue3')
-    
+
     # Start the logging device
     log = LOG_DEVICE.add_child(log_name)
     debug = log.debug
-    
+
     # Announce that we did that
     debug('Started my logger!')
     log = getLogger(log_name + '.Main')
@@ -358,11 +354,11 @@ def main() :
         from ip_reveal.assets.sounds import run_audio_test
         run_audio_test(args.countdown, args.full, args.log_level)
         exit()
-    
+
     status_bar_layout = [
-            
-            ]
-    
+
+    ]
+
     bg_color = "340245"
     size = (220, 50)
     alpha = 1
@@ -370,104 +366,104 @@ def main() :
         text_background_color = "pink"
     else:
         text_background_color = "white"
-    
+
     layout = [
-            [Qt.Menu(top_menu_layout)],
-            [
-                    Qt.Text(
-                        'Public IP:', background_color=text_background_color, text_color="black",
-                        relief=Qt.RELIEF_GROOVE,
-                        size_px=size, auto_size_text=True, justification='center',
-                        ),
-                    Qt.Text(
-                        get_external(), relief=Qt.RELIEF_SUNKEN, key='PUBLIC_OUT',
-                        background_color=text_background_color,
-                        text_color="black", size_px=size, auto_size_text=True, justification='center'
-                        ),
-                    Qt.Button(
-                            '',
-                            tooltip='Copy the IP to clipboard.',
-                            enable_events=True,
-                            image_data=copy_icon,
-                            key='PUBLIC_COPY',
-                            size_px=size,
-                            button_color=("#000000", "#000000")
-                            )
-                    ],
-            
-            [
-                    Qt.Text(
-                        'Local IP:', background_color=text_background_color, text_color="black",
-                        relief=Qt.RELIEF_GROOVE,
-                        size_px=size, auto_size_text=True, justification='center'
-                        ),
-                    Qt.Text(
-                        get_internal(), key='LOCAL_OUT', relief=Qt.RELIEF_SUNKEN,
-                        background_color=text_background_color,
-                        text_color="black", size_px=size, auto_size_text=True, justification='center'
-                        ),
-                    Qt.Button(
-                            '',
-                            tooltip='Copy the IP to clipboard.',
-                            enable_events=True,
-                            image_data=copy_icon,
-                            key='LOCAL_COPY',
-                            size_px=size,
-                            button_color=("#000000", "#000000")
-                            )
-                    ],
-            [
-                    Qt.Text(
-                        'Hostname:', background_color=text_background_color, text_color="black",
-                        relief=Qt.RELIEF_GROOVE,
-                        size_px=size, auto_size_text=True, justification='center'
-                        ),
-                    Qt.Text(
-                        get_hostname(), key='HOSTNAME_OUT', relief=Qt.RELIEF_SUNKEN,
-                        background_color=text_background_color,
-                        text_color="black", size_px=size, auto_size_text=True, justification='center'
-                        ),
-                    Qt.Button(
-                            '',
-                            tooltip="Copy the hostname to clipboard.",
-                            enable_events=True,
-                            image_data=copy_icon,
-                            key='HOSTNAME_COPY',
-                            size_px=size,
-                            button_color=(None, "#000000")
-                            
-                            )
-                    ],
-            [
-                    Qt.Text(
-                        f"Last checked", background_color=text_background_color, text_color="black",
-                        relief=Qt.RELIEF_GROOVE, size_px=size, auto_size_text=True, justification='center'
-                        ),
-                    Qt.Text(
-                        t_text, key="TIME_SINCE_Q_OUT", relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
-                        text_color="black", size_px=size, auto_size_text=True, justification='center'
-                        )
-                    ],
-            [
-                    Qt.Button(
-                        '', key='MAIN_CLOSE_BUTTON',
-                        image_filename=app_quit_50x50_fp,
-                        image_size=(50, 50),
-                        button_color=(None, "#ff0000"),
-                        tooltip="Quit IP Reveal"
-                        ),
-                    Qt.Button(
-                        '', key='MAIN_REFRESH_BUTTON',
-                        image_filename=app_refresh_50x50_fp,
-                        image_size=(50, 50),
-                        button_color=(None, "#ff0000"),
-                        tooltip="Refresh"
-                        )
-                    ],
-            ]
-    
+        [Qt.Menu(top_menu_layout)],
+        [
+            Qt.Text(
+                'Public IP:', background_color=text_background_color, text_color="black",
+                relief=Qt.RELIEF_GROOVE,
+                size_px=size, auto_size_text=True, justification='center',
+            ),
+            Qt.Text(
+                get_external(), relief=Qt.RELIEF_SUNKEN, key='PUBLIC_OUT',
+                background_color=text_background_color,
+                text_color="black", size_px=size, auto_size_text=True, justification='center'
+            ),
+            Qt.Button(
+                '',
+                tooltip='Copy the IP to clipboard.',
+                enable_events=True,
+                image_data=copy_icon,
+                key='PUBLIC_COPY',
+                size_px=size,
+                button_color=("#000000", "#000000")
+            )
+        ],
+
+        [
+            Qt.Text(
+                'Local IP:', background_color=text_background_color, text_color="black",
+                relief=Qt.RELIEF_GROOVE,
+                size_px=size, auto_size_text=True, justification='center'
+            ),
+            Qt.Text(
+                get_internal(), key='LOCAL_OUT', relief=Qt.RELIEF_SUNKEN,
+                background_color=text_background_color,
+                text_color="black", size_px=size, auto_size_text=True, justification='center'
+            ),
+            Qt.Button(
+                '',
+                tooltip='Copy the IP to clipboard.',
+                enable_events=True,
+                image_data=copy_icon,
+                key='LOCAL_COPY',
+                size_px=size,
+                button_color=("#000000", "#000000")
+            )
+        ],
+        [
+            Qt.Text(
+                'Hostname:', background_color=text_background_color, text_color="black",
+                relief=Qt.RELIEF_GROOVE,
+                size_px=size, auto_size_text=True, justification='center'
+            ),
+            Qt.Text(
+                get_hostname(), key='HOSTNAME_OUT', relief=Qt.RELIEF_SUNKEN,
+                background_color=text_background_color,
+                text_color="black", size_px=size, auto_size_text=True, justification='center'
+            ),
+            Qt.Button(
+                '',
+                tooltip="Copy the hostname to clipboard.",
+                enable_events=True,
+                image_data=copy_icon,
+                key='HOSTNAME_COPY',
+                size_px=size,
+                button_color=(None, "#000000")
+
+            )
+        ],
+        [
+            Qt.Text(
+                f"Last checked", background_color=text_background_color, text_color="black",
+                relief=Qt.RELIEF_GROOVE, size_px=size, auto_size_text=True, justification='center'
+            ),
+            Qt.Text(
+                t_text, key="TIME_SINCE_Q_OUT", relief=Qt.RELIEF_SUNKEN, background_color=text_background_color,
+                text_color="black", size_px=size, auto_size_text=True, justification='center'
+            )
+        ],
+        [
+            Qt.Button(
+                '', key='MAIN_CLOSE_BUTTON',
+                image_filename=app_quit_50x50_fp,
+                image_size=(50, 50),
+                button_color=(None, "#ff0000"),
+                tooltip="Quit IP Reveal"
+            ),
+            Qt.Button(
+                '', key='MAIN_REFRESH_BUTTON',
+                image_filename=app_refresh_50x50_fp,
+                image_size=(50, 50),
+                button_color=(None, "#ff0000"),
+                tooltip="Refresh"
+            )
+        ],
+    ]
+
     print(layout)
-    
+
     # Assemble the above widget into a window.
     window = Qt.Window(
         'IP-Reveal by Inspyre Softworks', layout=layout,
@@ -477,53 +473,56 @@ def main() :
         alpha_channel=alpha,
         grab_anywhere=True,
         background_color="white"
-        )
-    
+    )
+
     # Start our main GUI loop.
-    while True :
+    while True:
         event, values = window.read(timeout=100)
-        
+
         # Set up a child logger that will log window events.
         w_log = getLogger(log_name + '.MainWindow')
         w_debug = w_log.debug
-        
+
         # Increment the cycle count
         acc += 1
         total_acc += 1
-        
+
         t = int(timer.get_elapsed(seconds=True))
         t_text = humanize.naturaldelta(t)
-        
+
         window['TIME_SINCE_Q_OUT'].update(f"{t_text} ago...")
-        
+
         if 'USER' in config.parser.sections():
             section = 'USER'
         else:
             section = 'DEFAULTS'
-        
+
         # If the accumulator is at 325 counts, alert the user, update the window, and reset the accumulator
         if t >= int(config.parser[section].getint('refresh_interval')):
             w_debug('Calling function to update the window...')
-            
-            update_window()
-            
+
+            try:
+                update_window()
+            except ImportError:
+                log.warning('Failed to update the window...')
+
             # window['TIME_SINCE_Q_OUT'].update('Refreshing...')
             # update_win = Thread(target=update_window)
             #
             # update_win.start()
             w_debug('Updated window!')
-        
+
         # If the 'Close' button is pressed: we exit.
-        if event is None or event == 'MAIN_CLOSE_BUTTON' :
+        if event is None or event == 'MAIN_CLOSE_BUTTON':
             e_reason = f"It seems the user closed the window, received {values}"
-            if event == 'MAIN_CLOSE_BUTTON' :
+            if event == 'MAIN_CLOSE_BUTTON':
                 e_reason = 'The close button was pressed'
             safe_exit(window, exit_reason=e_reason)
-            
+
             w_log.info("User initiated closing")
-            
+
             break
-        
+
         # Check for top-menu events
         if event == 'About':
             about_window = AboutWindow()
@@ -532,19 +531,16 @@ def main() :
             pref_window = PreferencesWindow()
             pref_window.run()
             pref_window.window.close()
-            
-        
-        if event == 'MAIN_REFRESH_BUTTON' :
+
+        if event == 'MAIN_REFRESH_BUTTON':
             w_debug('Calling a refresh on the window')
             update_window()
             w_debug('All seems well!')
-        
+
         if event.endswith('COPY'):
             wcopy = event.split('_')[0]
             pyperclip.copy(window[f'{wcopy}_OUT'].DisplayText)
             w_log.debug(f'Copied {wcopy} to clipboard')
-        
-            
 
 
 if __name__ == '__main__':
