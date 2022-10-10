@@ -3,7 +3,6 @@ from ip_reveal.assets.sounds import alerts
 
 def run_audio_test(countdown=3, full=False, log_level='debug'):
     """
-    
     Run a left-right channel audio-test to ensure 'simpleaudio' is working correctly.
     
     Returns:
@@ -40,7 +39,7 @@ class Alerts(object):
         """
         Initialize an "Alerts" class that contains sounds for alerts.
         """
-        self.log_name = self.PROG_NAME + '.assets.sounds.Alerts'
+        self.log_name = f'{self.PROG_NAME}.assets.sounds.Alerts'
         self.log = self.LOG_DEVICE.add_child(self.log_name)
         self.log.debug('Instantiating!')
         self.asset_fp = alerts.ALERT_AUDIO_FP
@@ -58,7 +57,7 @@ class Alerts(object):
             None
 
         """
-        log = self.LOG_DEVICE.add_child(self.log_name + '.play')
+        log = self.LOG_DEVICE.add_child(f'{self.log_name}.play')
         log.debug('Received request to play alert sound.')
         self.sound.play()
         log.debug('Finished playing alert sound!')
