@@ -5,3 +5,5 @@
 *.whl
 /.idea
 *ip-reveal.iml
+dist/
+
