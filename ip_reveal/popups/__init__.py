@@ -1,23 +1,41 @@
 import PySimpleGUI as Gui
 from ip_reveal.assets.ui_elements.icons.alerts import icons_alert_shield
-from ip_reveal.assets.sounds import Alerts
 from threading import Thread
 from pypattyrn.behavioral.null import Null
 from ip_reveal.config import args, LOG_DEVICE, PROG_NAME
 
 GUI = Gui
 
-LOG_NAME = PROG_NAME + '.gui.popups'
+LOG_NAME = f'{PROG_NAME}.gui.popups'
 
 log = LOG_DEVICE.add_child(LOG_NAME)
 
 
+audio_engine = None
+
+
+try:
+    import simpleaudio
+    log.debug('Found audio engine')
+    audio_engine = True
+except ModuleNotFoundError:
+    log.warning('No simpleaudio module found. Please install the simpleaudio package if you are wish to have audio '
+                'notifications')
+    log.warning('Forcing audio into mute state.')
+    args.mute_all = True
+
+
 log.debug('Checking to see if alerts are muted.')
-if args.mute_all:
-    log.warning('Alerts are muted!')
+if args.mute_all or not audio_engine:
+    if not audio_engine:
+        log.warning('No audio engine available please install simpleaudio if you wish to hear notifications.')
+    else:
+        log.warning('Alerts are muted!')
     bell = Null()
 else:
     log.debug('Alerts are not muted. Loading alert class!')
+
+    from ip_reveal.assets.sounds import Alerts
     bell = Alerts()
     log.debug('Alert class loaded!')
 
@@ -46,15 +64,15 @@ def notify(msg, duration=7000, alpha=.8, location=(750, 450), icon=icons_alert_s
         None
 
     """
-    log = LOG_DEVICE.add_child(LOG_NAME + '.notify')
-    
+    log = LOG_DEVICE.add_child(f'{LOG_NAME}.notify')
+
     log.debug('Received request to send notification to the desktop environment')
 
     log.debug('Playing alert bell.')
     bell.play()
     log.debug('Alert sound commenced.')
     log.debug('Sending visual alert.')
-    
+
     log.debug('Notified')
 
 
@@ -77,16 +95,16 @@ def ip_change_notify(old, new, muted=False, log_device=None):
         None
 
     """
-    log = LOG_DEVICE.add_child(LOG_NAME + '.ip-change-notify')
+    log = LOG_DEVICE.add_child(f'{LOG_NAME}.ip-change-notify')
     log.debug('IP change notification requested.')
     message = f'Your external IP address has changed from {old} to {new}'
-    
+
     log.debug(f'Notification message {message}')
-    
+
     notif = Thread(target=notify, args=(message,), daemon=True)
-    
+
     log.debug(f'Build notification thread: {notif.getName()}')
-    
+
     notif.start()
     GUI.popup_notify(
         message, display_duration_in_ms=duration, alpha=alpha,
