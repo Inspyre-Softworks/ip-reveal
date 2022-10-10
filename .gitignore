@@ -3,3 +3,5 @@
 /.idea/*
 *.gz
 *.whl
+/.idea
+*ip-reveal.iml
