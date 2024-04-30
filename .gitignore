@@ -4,3 +4,4 @@
 *.gz
 *.whl
 /.idea/
+*.log
