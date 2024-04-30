@@ -4,3 +4,5 @@
 *.gz
 *.whl
 /.idea/
+*.log
+*.egg-info/
